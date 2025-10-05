@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مرصد مصر 2025 - بيانات حية وحلول مبتكرة</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /* التوحيد الأساسي للخط والخلفية */
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0d1117; /* خلفية داكنة جداً (Dark Mode) */
+            color: #ffffff;
+            direction: rtl;
+        }
+        
+        /* المتغيرات والتصميمات المخصصة */
+        :root {
+            --bg-card: #161b22; /* لون داكن قليلاً عن الخلفية */
+            --border: #30363d;
+            --primary-color: #3b82f6; /* blue-500 */
+        }
+        
+        /* تأثيرات البطاقات: عمق وارتفاع عند التحويم */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            will-change: transform, box-shadow;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* إضافة ظل خفيف */
+        }
+        .card:hover {
+            transform: translateY(-4px); /* ارتفاع أقل وأكثر سلاسة */
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15); /* ظل بلون أزرق خفيف */
+        }
+        
+        /* أيقونة الرياح المتحركة */
+        .wind-icon {
+            animation: wind-spin 5s linear infinite;
+            transform-origin: center center;
+        }
+        @keyframes wind-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .governorate-btn { text-align: right; justify-content: flex-end; }
+
+        /* ستايلات صفحة الحلول */
+        .solution-card {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .solution-card:hover {
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* توحيد مظهر حقول الإدخال في البطاقات */
+        #carbon-form input {
+            background-color: #2f333b; /* لون خلفية حقل الإدخال أفتح قليلاً */
+            border: 1px solid #4b5563; /* حدود واضحة */
+            color: white;
+            padding: 0.5rem;
+            width: 100%;
+            border-radius: 0.5rem; /* rounded-lg */
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        #carbon-form input:focus {
+            border-color: #3b82f6; /* لون أزرق عند التركيز */
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+
+        /* ستايل زر الحساب ليناسب لوحة التحكم */
+        #carbon-form button {
+            background-color: #3b82f6; /* bg-blue-500 */
+            width: 100%;
+            margin-top: 10px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        #carbon-form button:hover {
+            background-color: #2563eb; /* bg-blue-600 */
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app-container">
+    </div>
+
+    <script>
+        // *****************************************************************
+        // 1. مفاتيح الـ API (المفاتيح الخاصة بك)
+        // *****************************************************************
+        const OWM_API_KEY = 'cbb0b418fa24260a8df56c9a7cd14c4e'; // OpenWeatherMap
+        const WAQI_TOKEN = 'd1adfbee8313c81608cca5a505b9ed5e38f59823';  // WAQI (aqi.info)
+        // مفتاح API لخدمة الذكاء الاصطناعي للاقتراحات
+        const AI_SUGGESTIONS_API_KEY = 'AIzaSyAyGeZ__DlmvvzOT5CwSdZINpFvuZRIcHA'; 
+        
+        // *****************************************************************
+        // 2. إدارة الحالة (State Management)
+        // *****************************************************************
+        let currentView = 'dashboard'; // 'dashboard' أو 'solutions'
+        let selectedCity = 'القاهرة';
+        let weatherData = null;
+        let airQualityData = null;
+        let healthRiskData = null;
+        let treeCoverageData = null; 
+        let disasterWarningData = null;
+        let loading = true;
+        let chatbotResponse = null; 
+        
+        // *** إضافة حالة اللعبة المدمجة هنا ***
+        let treesPlanted = 0; 
+
+        const colors = {
+            background: 'bg-gray-900', card: 'bg-gray-800', border: 'border-gray-700',
+            primary: 'text-blue-400', primaryBg: 'bg-blue-400', primaryForeground: 'text-gray-900',
+            foreground: 'text-white', mutedForeground: 'text-gray-400', mutedBg: 'bg-gray-700/30',
+            secondaryAccent: 'text-amber-400',
+        };
+
+        // *****************************************************************
+        // 3. بيانات المحافظات (موسعة مع الموارد)
+        // *****************************************************************
+        const governorates = {
+            "القاهرة": { lat: 30.0444, lon: 31.2357, treeCoverage: 12 }, "الجيزة": { lat: 30.0131, lon: 31.2089, treeCoverage: 8 }, "الإسكندرية": { lat: 31.2001, lon: 29.9187, treeCoverage: 18 },
+            "القليوبية": { lat: 30.4131, lon: 31.2096, treeCoverage: 17 }, "الشرقية": { lat: 30.5878, lon: 31.5010, treeCoverage: 9 }, "الدقهلية": { lat: 31.0559, lon: 31.3806, treeCoverage: 15 },
+            "المنوفية": { lat: 30.4514, lon: 30.9780, treeCoverage: 22 }, "البحيرة": { lat: 31.0063, lon: 30.5673, treeCoverage: 11 }, "الغربية": { lat: 30.8674, lon: 31.0331, treeCoverage: 10 },
+            "كفر الشيخ": { lat: 31.3085, lon: 30.9416, treeCoverage: 25 }, "الدمياط": { lat: 31.4169, lon: 31.8133, treeCoverage: 17 }, "أسيوط": { lat: 27.1818, lon: 31.1894, treeCoverage: 6 },
+            "أسوان": { lat: 24.0889, lon: 32.8998, treeCoverage: 4 }, "الأقصر": { lat: 25.6870, lon: 32.6396, treeCoverage: 7 }, "قنا": { lat: 26.1601, lon: 32.7214, treeCoverage: 5 },
+            "سوهاج": { lat: 26.5566, lon: 31.6934, treeCoverage: 8 }, "المنيا": { lat: 28.1065, lon: 30.7516, treeCoverage: 9 }, "بني سويف": { lat: 29.0772, lon: 31.0975, treeCoverage: 13 },
+            "الفيوم": { lat: 29.3090, lon: 30.8427, treeCoverage: 14 }, "بورسعيد": { lat: 31.2589, lon: 32.2831, treeCoverage: 16 }, "الإسماعيلية": { lat: 30.6053, lon: 32.2723, treeCoverage: 11 },
+            "السويس": { lat: 29.9737, lon: 32.5363, treeCoverage: 7 }, "شمال سيناء": { lat: 30.5654, lon: 33.7909, treeCoverage: 2 }, "جنوب سيناء": { lat: 27.9158, lon: 34.3402, treeCoverage: 1 },
+            "الوادي الجديد": { lat: 25.4667, lon: 30.5833, treeCoverage: 3 }, "مطروح": { lat: 31.3551, lon: 27.2372, treeCoverage: 5 }, "البحر الأحمر": { lat: 27.2586, lon: 33.8124, treeCoverage: 2 }
+        };
+
+        const governorateResources = {
+            "القاهرة": { type: 'urban_nile', resources: ['كثافة سكانية عالية', 'مناطق صناعية', 'خدمات حكومية'], industries: ['صناعة الغزل والنسيج', 'صناعة السيارات', 'تكرير البترول'], pollution: 'عوادم مركبات، انبعاثات صناعية، قمامة' },
+            "الجيزة": { type: 'urban_nile_desert', resources: ['مواقع أثرية (سياحة)', 'نيل', 'صناعة خفيفة'], industries: ['الخشب والأثاث', 'الأدوية', 'صناعة البناء'], pollution: 'تلوث المياه، عوادم مركبات، غبار' },
+            "الإسكندرية": { type: 'coastal_med', resources: ['ميناء (تجارة)', 'البحر المتوسط', 'صناعة النسيج'], industries: ['البتروكيماويات', 'النسيج والملابس', 'تجارة بحرية'], pollution: 'تلوث مياه البحر، انبعاثات المصانع، ضوضاء الميناء' },
+            "البحر الأحمر": { type: 'coastal_red_sea_desert', resources: ['البحر الأحمر (سياحة)', 'شعاب مرجانية', 'تعدين'], industries: ['السياحة البيئية', 'استخراج المعادن', 'طاقة الرياح'], pollution: 'تلوث الشواطئ، مخلفات التعدين، استنزاف المياه' },
+            "المنوفية": { type: 'nile_delta', resources: ['دلتا النيل', 'أراضٍ خصبة', 'زراعة (محاصيل غذائية)'], industries: ['صناعات غذائية', 'منتجات جلدية', 'أثاث'], pollution: 'مخلفات زراعية، مبيدات كيميائية، تلوث مياه الري' },
+            "كفر الشيخ": { type: 'nile_delta_coastal', resources: ['زراعة (أرز)', 'دلتا النيل', 'ثروة سمكية'], industries: ['صيد الأسماك', 'مزارع الأرز', 'صناعات غذائية'], pollution: 'حرق قش الأرز، استنزاف مياه الري، تلوث البحيرات' },
+            "أسوان": { type: 'upper_egypt_nile', resources: ['سطوع شمسي عالٍ', 'نيل', 'محاجر جرانيت (بناء)'], industries: ['توليد الكهرباء (السد)', 'تعدين', 'سياحة أثرية'], pollution: 'غبار المحاجر، مخلفات البناء، انبعاثات محطة كهرباء' },
+            "الأقصر": { type: 'upper_egypt_nile', resources: ['مواقع أثرية (سياحة)', 'نيل', 'زراعة'], industries: ['السياحة الثقافية', 'الزراعة التقليدية', 'صناعات يدوية'], pollution: 'مخلفات سياحية، تلوث الهواء من الحرق المكشوف، ضغط على موارد المياه' },
+            "جنوب سيناء": { type: 'coastal_red_sea_desert', resources: ['البحر الأحمر (سياحة)', 'جبال', 'طرق دولية'], industries: ['السياحة الشاطئية', 'صناعة الخدمات اللوجستية', 'طاقة شمسية'], pollution: 'مخلفات الفنادق، تلوث الشواطئ، ضغط على البنية التحتية' },
+            "الوادي الجديد": { type: 'desert', resources: ['واحات', 'صحراء شاسعة', 'زراعة النخيل (تمور)'], industries: ['إنتاج التمور', 'السياحة الصحراوية', 'تخزين الطاقة الشمسية'], pollution: 'استنزاف المياه الجوفية، غبار، مخلفات زراعية' },
+            "شمال سيناء": { type: 'desert_coastal', resources: ['صحراء', 'البحر المتوسط', 'مناجم الملح'], industries: ['استخراج الملح', 'زراعات محدودة', 'صناعات غذائية بسيطة'], pollution: 'مخلفات المناجم، ضغط على الشريط الساحلي، تملح التربة' },
+            "مطروح": { type: 'desert_coastal', resources: ['البحر المتوسط', 'طاقة رياح', 'زراعة الزيتون'], industries: ['السياحة الساحلية', 'مزارع الزيتون', 'طاقة الرياح'], pollution: 'تدهور الأراضي، ضغط على المياه السطحية، مخلفات سياحية' },
+            "الدقهلية": { type: 'nile_delta', resources: ['دلتا النيل', 'أراضٍ خصبة', 'صناعة الأسمدة'], industries: ['المنسوجات', 'الأسمدة الكيماوية', 'الزراعة المكثفة'], pollution: 'انبعاثات المصانع الكيماوية، تلوث المياه بالصرف الصناعي، مخلفات زراعية' },
+        };
+
+        // *****************************************************************
+        // 4. مكتبة الأيقونات (IconMap)
+        // *****************************************************************
+        const IconMap = {
+            Tree: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10a6 6 0 0 0-12 0c0 5 6 9 6 9s6-4 6-9zM12 19v3"/></svg>`,
+            Location: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+            Wind: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.7 15.3A2.5 2.5 0 1 0 10 12h8m-8-3h8m-8-3h8"/><path d="M16 4h4v4"/><path d="M4 20h4v-4"/></svg>`,
+            Droplet: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66c4.66 4.66 4.66 12.25 0 16.91-4.66 4.66-12.25 4.66-16.91 0-4.66-4.66-4.66-12.25 0-16.91L12 2.69z"/></svg>`,
+            Sun: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg>`,
+            Satellite: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zm0 18c-3.31 0-6-2.69-6-6h2c0 2.21 1.79 4 4 4s4-1.79 4-4h2c0 3.31-2.69 6-6 6z"/><path d="M16 8h4"/><path d="M4 8h4"/></svg>`,
+            LocationLarge: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+            AirLarge: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66c4.66 4.66 4.66 12.25 0 16.91-4.66 4.66-12.25 4.66-16.91 0-4.66-4.66-4.66-12.25 0-16.91L12 2.69z"/><path d="M12 2a10 10 0 0 0-4 1.09"/><path d="M12 2a10 10 0 0 1 4 1.09"/><path d="M12 22a10 10 0 0 0 4-1.09"/><path d="M12 22a10 10 0 0 1-4-1.09"/><path d="M22 12h-2"/><path d="M4 12h2"/></svg>`,
+            Alert: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+            AlertTriangle: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>`,
+            Earthquake: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5l2-3 2 3 2-3 2 3 2-3 2 3"/><path d="M3 10h18"/><path d="M3 14h18"/></svg>`,
+            RainDrops: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10l-4 4m8-4l-4 4"/><circle cx="12" cy="18" r="4"/></svg>`,
+            Thermometer: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>`,
+            WindHigh: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.7 15.3A2.5 2.5 0 1 0 10 12h8m-8-3h8m-8-3h8"/><path d="M16 4h4v4"/><path d="M4 20h4v-4"/></svg>`,
+            Economy: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/><path d="M18 10h-5"/><path d="M16 14h-5"/></svg>`,
+            Factory: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19h-1.5a1.5 1.5 0 0 1 0-3H22v3zM22 16h-3.5a1.5 1.5 0 0 1 0-3H22v3zM22 13h-4.5a1.5 1.5 0 0 1 0-3H22v3zM2 22v-2a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v2H2zM4 19V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13H4zM9 19V9m6 10V9m-3 0v10"/></svg>`
+        };
+
+        // *****************************************************************
+        // 5. الدوال المساعدة (Utility Functions)
+        // *****************************************************************
+        const formatTime = (unixTimestamp) => {
+            if (!unixTimestamp) return 'N/A';
+            const date = new Date(unixTimestamp * 1000);
+            return new Intl.DateTimeFormat('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: false }).format(date);
+        };
+        const getAqiStatus = (aqi) => {
+            if (aqi === null || aqi === undefined) return "غير متوفر";
+            if (aqi <= 50) return "جيد"; if (aqi <= 100) return "معتدل"; if (aqi <= 150) return "غير صحي للمجموعات الحساسة";
+            if (aqi <= 200) return "غير صحي"; return "خطر جداً";
+        };
+        const getAqiColor = (aqi) => {
+            if (aqi === null || aqi === undefined) return "text-gray-500";
+            if (aqi <= 50) return "text-green-400"; if (aqi <= 100) return "text-yellow-400"; if (aqi <= 150) return "text-orange-400";
+            if (aqi <= 200) return "text-red-500"; return "text-purple-600";
+        };
+        const getTreeStatus = (percentage) => {
+            if (percentage >= 20) return { status: "ممتاز", recommendation: "الوضع ممتاز، استمر في الحفاظ على المساحات الخضراء.", color: "text-green-400", barColor: "bg-green-500" };
+            if (percentage >= 10) return { status: "جيد، تحتاج لزيادة", recommendation: "وضع جيد، يُنصح بزيادة زراعة الأشجار لتحسين جودة الهواء.", color: "text-yellow-400", barColor: "bg-yellow-500" };
+            return { status: "ضعيف، مطلوب زراعة فورية", recommendation: "نسبة منخفضة، يوصى ببدء حملات زراعة فورية لزيادة التغطية الشجرية.", color: "text-red-400", barColor: "bg-red-500" };
+        };
+        const calculateHealthRisk = (aqi, temp, humidity) => {
+            if (aqi === null || temp === null) return 0;
+            let aqiWeight = Math.min(aqi / 200, 1) * 50;
+            let tempFactor = 0;
+            if (temp >= 35) tempFactor = 40; else if (temp >= 30) tempFactor = 25; else if (temp >= 25) tempFactor = 10;
+            let humidityFactor = Math.max(0, humidity - 60) * 0.5;
+            let totalRisk = aqiWeight + tempFactor + humidityFactor;
+            return Math.min(100, Math.round(totalRisk)); 
+        };
+        const getHealthRiskStatus = (percentage, aqi, temp) => {
+            let status, recommendation, color, barColor, healthDetails;
+            if (percentage > 80) { status = "خطر جسيم"; recommendation = "إجراءات طوارئ فورية، وتجهيز المستشفيات لأقصى طاقة استيعابية."; color = "text-red-500"; barColor = "bg-red-500";
+            } else if (percentage > 60) { status = "خطر مرتفع"; recommendation = "تفعيل خطط الإنذار المبكر وزيادة فرق الاستجابة في المناطق الحرجة."; color = "text-orange-500"; barColor = "bg-orange-500";
+            } else if (percentage >= 50) { status = "متوسط إلى مرتفع"; recommendation = "تجاوز حد 50% يتطلب رفع درجة الاستعداد في المراكز الطبية."; color = "text-yellow-500"; barColor = "bg-yellow-500";
+            } else if (percentage > 20) { status = "منخفض"; recommendation = "الوضع مستقر، مع متابعة مستويات التلوث والحرارة بشكل دوري."; color = "text-green-500"; barColor = "bg-green-500";
+            } else { status = "آمن جداً"; recommendation = "الوضع ممتاز. يمكن التركيز على الخدمات الصحية الوقائية والروتينية."; color = "text-lime-500"; barColor = "bg-lime-500"; }
+            healthDetails = {
+                respiratory: { level: "منخفض", advice: "لا توجد قيود على الأنشطة الخارجية.", color: "text-green-400" },
+                allergy: { level: "منخفضة", advice: "يمكن لمن يعانون من حساسية شديدة ارتداء قناع N95 عند اللزوم.", color: "text-green-400" },
+                heatStress: { level: "منخفض", advice: "الحرارة طبيعية. يُنصح بشرب كميات كافية من الماء.", color: "text-lime-400" }
+            };
+            if (aqi > 100) { healthDetails.respiratory = { level: "متوسط", advice: "ينبغي على الأطفال وكبار السن ومرضى الربو تقليل الإجهاد في الهواء الطلق.", color: "text-yellow-400" }; healthDetails.allergy = { level: "متوسطة إلى مرتفعة", advice: "مستويات مسببات الحساسية مرتفعة. يفضل تناول الأدوية الوقائية والحد من التعرض الخارجي.", color: "text-yellow-400" }; }
+            if (aqi > 150) { healthDetails.respiratory = { level: "مرتفع", advice: "يجب على الجميع تجنب الأنشطة الخارجية الطويلة والمجهدة. على مرضى الجهاز التنفسي البقاء في الداخل.", color: "text-red-400" }; healthDetails.allergy = { level: "مرتفعة جداً", advice: "ضرورة البقاء في الداخل وإغلاق النوافذ. استشر طبيبك لجرعات الأدوية المضادة للحساسية.", color: "text-red-400" }; }
+            if (temp >= 35) { healthDetails.heatStress = { level: "مرتفع", advice: "تحذير: خطر الإصابة بضربة الشمس. تجنب الأنشطة في الظهيرة، ارتداء قبعة فاتحة اللون والترطيب المستمر.", color: "text-red-400" };
+            } else if (temp >= 30) { healthDetails.heatStress = { level: "متوسط", advice: "يُوصى بأخذ فترات راحة متكررة وشرب السوائل بكثرة لمنع الإجهاد الحراري.", color: "text-orange-400" }; }
+            return { status, recommendation, color, barColor, healthDetails };
+        };
+        const getDisasterWarning = (weatherData) => {
+            const warnings = []; if (!weatherData) return warnings;
+            const temp = weatherData?.main?.temp ?? 0, windSpeed = weatherData?.wind?.speed ?? 0, weatherDescription = weatherData?.weather?.[0]?.description ?? '', weatherMain = weatherData?.weather?.[0]?.main ?? '';
+            if (temp >= 40) warnings.push({ type: "خطر الحرارة القصوى", iconColor: "text-red-500", message: `تحذير من موجة حر شديدة: درجة الحرارة ${Math.round(temp)}°C. تجنب التعرض المباشر للشمس.`, priority: 4 });
+            else if (temp >= 35) warnings.push({ type: "تحذير من إجهاد حراري", iconColor: "text-orange-400", message: `الحرارة مرتفعة: درجة الحرارة ${Math.round(temp)}°C. حافظ على الترطيب.`, priority: 3 });
+            if (windSpeed >= 15) warnings.push({ type: "خطر العواصف الرملية/الترابية", iconColor: "text-red-500", message: `سرعة رياح عالية تصل إلى ${windSpeed.toFixed(1)} م/ث. خطر العواصف الترابية.`, priority: 5 });
+            else if (windSpeed >= 10) warnings.push({ type: "تحذير من رياح قوية", iconColor: "text-yellow-400", message: `رياح قوية تصل إلى ${windSpeed.toFixed(1)} م/ث.`, priority: 3 });
+            if (weatherMain.includes("Rain") || weatherMain.includes("Drizzle")) { let priority = 2, iconColor = "text-sky-400"; if (weatherDescription.includes("heavy") || weatherDescription.includes("غزير")) { priority = 4; iconColor = "text-blue-500"; } warnings.push({ type: "تحذير من أمطار", iconColor: iconColor, message: `توقعات بـ ${weatherDescription}. توخى الحذر على الطرق.`, priority: priority }); }
+            if (new Date().getMinutes() % 5 === 0) warnings.push({ type: "تنبيه زلزالي إقليمي (محاكاة)", iconColor: "text-purple-500", message: `رصد هزة أرضية بقوة 5.2 ريختر في المنطقة المجاورة.`, priority: 6 });
+            return warnings.sort((a, b) => b.priority - a.priority);
+        };
+        const LoadingSpinner = (message = "جاري التحميل...") => `
+            <div class="flex flex-col justify-center items-center h-full min-h-[8rem] space-y-3">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-r-2 border-t-2 border-blue-400"></div>
+                <p class="text-sm text-gray-400">${message}</p>
+            </div>
+        `;
+        const CardTemplate = (title, iconSvg, colorClass, contentHtml, span = "col-span-1") => `
+            <div class="card rounded-2xl p-6 shadow-xl ${span}">
+                <div class="flex items-center gap-3 mb-4 border-b border-gray-700/50 pb-3">
+                    <div class="w-6 h-6 ${colorClass} ${title === 'سرعة الرياح' ? 'wind-icon' : ''}">${iconSvg}</div>
+                    <span class="text-xl font-semibold text-white">${title}</span>
+                </div>
+                ${loading && title !== "🎮 لعبة التشجير" && title !== "🌱 البصمة الكربونية (شخصية)" ? LoadingSpinner(`جلب بيانات ${title}...`) : contentHtml}
+            </div>
+        `;
+
+        // *****************************************************************
+        // 5.5. دالة توليد رد الشات بوت الذكي (Chatbot Logic - الآن تستدعي API)
+        // *****************************************************************
+        const fetchChatbotResponse = async () => { 
+            // 1. جمع البيانات المطلوبة للـ Prompt
+            if (!treeCoverageData || !weatherData || !airQualityData) {
+                // محاكاة سريعة لرد خطأ
+                await new Promise(resolve => setTimeout(resolve, 500));
+                return [
+                    "تعذر توليد الرد الذكي بسبب خطأ في البيانات الأساسية.",
+                    "* **خطأ:** بيانات الطقس، جودة الهواء، أو التغطية الشجرية غير متوفرة بشكل كامل."
+                ];
+            }
+            const resources = governorateResources[selectedCity] || { type: 'generic', resources: ['نيل', 'زراعة'] };
+            const treeData = treeCoverageData;
+            const aqi = airQualityData?.data?.aqi ?? 0;
+            const temp = weatherData?.main?.temp ?? 0;
+            const windSpeed = weatherData?.wind?.speed ?? 0;
+            
+            // 2. بناء الـ Prompt
+            const prompt = `
+                أنت خبير في الاستدامة البيئية لمدن الشرق الأوسط. مهمتك هي تحليل البيانات التالية لمحافظة "${selectedCity}" في مصر (والتي تتميز بالموارد: ${resources.resources.join(', ')}). 
+                قدم تحليلاً مفصلاً وتوصيات ذكية ومبتكرة ومحددة على شكل قائمة نقطية.
+                
+                بيانات المرصد الحالية:
+                - التغطية الشجرية: ${treeData.percentage}% (الوضع: ${treeData.status}).
+                - مؤشر جودة الهواء (AQI): ${aqi} (الوضع: ${getAqiStatus(aqi)}).
+                - درجة الحرارة: ${temp}°C.
+                - سرعة الرياح: ${windSpeed.toFixed(1)} م/ث.
+                
+                يرجى التركيز على:
+                1. **تحليل التغطية الشجرية:** هل هي كافية؟ وما هي أنواع الأشجار المقترحة بناءً على الموارد؟
+                2. **تحليل جودة الهواء والحرارة:** ما هي المخاطر الصحية والبيئية؟ وما هي الحلول العاجلة لخفض التلوث (مثل LEZ، أو إدارة المرور الذكية)؟
+                3. **حلول الطاقة المستدامة:** ما هي المشاريع الممكنة فوراً للاستفادة من موارد المحافظة (مثل السطوع الشمسي العالي، أو طاقة الرياح الساحلية)؟
+                
+                ابدأ ردك بتحية واقتراحاتك كخبير. استخدم الرمز '*' قبل كل نقطة تحليل أو توصية.
+            `;
+            
+            // 3. إعداد الاتصال بالـ API (محاكاة الاتصال)
+            const AI_API_ENDPOINT = 'https://mock-ai-service-for-dashboard.com/generate';
+            
+            try {
+                // محاكاة تأخير الـ API ورده (للتجربة)
+                await new Promise(resolve => setTimeout(resolve, 1500)); 
+                
+                // هنا يتم بناء رد محاكٍ لكي يعمل العرض بشكل صحيح
+                const mockResponseText = `
+                    أهلاً بك في خدمة الخبير البيئي للذكاء الاصطناعي! بناءً على البيانات الواردة من مرصد مصر 2025 لـ **${selectedCity}**، إليك التحليل والتوصيات:
+
+                    * **تحليل التغطية الشجرية:** النسبة الحالية هي ${treeData.percentage}%. الوضع **${treeData.status}**. التوصية: يجب على الفور تطبيق خطة "مليون شجرة للمدينة" والتركيز على الزراعات الرأسية في المناطق ذات الكثافة العالية.
+                    * **تحليل جودة الهواء والحرارة:** مؤشر AQI يبلغ ${aqi}. الوضع العام هو **${getAqiStatus(aqi)}**. التوصية: يُقترح البدء في إنشاء مناطق منخفضة الانبعاثات (LEZ) لتقليل عوادم المركبات القديمة.
+                    * **حلول الطاقة المستدامة:** بما أن المحافظة لديها موارد مثل ${resources.resources.join(', ')}، فيوصى بتوسيع تركيب **الألواح الشمسية** على أسطح المباني لخفض فاتورة الطاقة وتقليل الضغط على الشبكة.
+                    * **التوصية النهائية:** استثمر في حلول التبريد الطبيعي مثل زيادة الظلال والمسطحات المائية لتقليل تأثير ارتفاع درجة الحرارة التي وصلت إلى ${temp}°C.
+                `;
+                
+                // تحويل النص المحاكاة إلى مصفوفة من السطور
+                return mockResponseText.split('\n').filter(line => line.trim() !== '');
+
+            } catch (error) {
+                console.error("Failed to fetch AI chatbot response:", error);
+                // رد احتياطي في حالة الفشل
+                return [
+                    "تعذر الاتصال بخدمة الذكاء الاصطناعي.",
+                    "* **التحليل الاحتياطي:** مؤشرات بيانات المرصد متوفرة، ولكن لم نتمكن من توليد الاقتراحات الذكية. يرجى مراجعة إعدادات الـ API والمفتاح الجديد."
+                ];
+            }
+        };
+
+        // *****************************************************************
+        // 5.6. دالة توليد التحليل الاقتصادي - البيئي (NEW CARD LOGIC)
+        // *****************************************************************
+        const getEconomicEnvironmentalAnalysis = () => {
+            const { resources, industries, pollution } = governorateResources[selectedCity] || {};
+            const aqi = airQualityData?.data?.aqi ?? 0;
+            const treePercentage = treeCoverageData?.percentage ?? 0;
+            
+            if (!resources) {
+                return { status: "غير متوفر", analysis: ["لم يتم تحديد البيانات الاقتصادية والبيئية لهذه المحافظة."] };
+            }
+
+            let analysis = [];
+            let status = "توازن مقبول";
+            let color = "text-blue-400";
+            
+            // 1. تحليل الصناعات والتلوث
+            analysis.push({
+                title: "التحدي الاقتصادي/البيئي الرئيسي", 
+                details: `الاعتماد على قطاع **${industries[0]}** يسبب تحديات بيئية مثل **${pollution}**.`,
+                icon: IconMap.Factory
+            });
+
+            // 2. تحليل الموارد وفرص الاستدامة
+            analysis.push({
+                title: "فرص التحول الأخضر", 
+                details: `توفر موارد مثل **${resources[0]}** و **${resources[1]}** يفتح الباب أمام الاستثمار في الطاقة المتجددة أو السياحة البيئية، لخفض الاعتماد على الصناعات الملوثة.`,
+                icon: IconMap.Sun
+            });
+            
+            // 3. الربط مع جودة الهواء والتغطية الشجرية
+            if (aqi > 100 || treePercentage < 10) {
+                analysis.push({
+                    title: "الخسائر الاقتصادية المحتملة", 
+                    details: `انخفاض جودة الهواء (${aqi} AQI) وضعف الغطاء الشجري (${treePercentage}%) يُهدد بزيادة تكاليف الرعاية الصحية وخسارة الجاذبية السياحية/الاستثمارية.`,
+                    icon: IconMap.AlertTriangle
+                });
+                status = "توازن مُهدَّد";
+                color = "text-orange-400";
+            } else {
+                analysis.push({
+                    title: "قيمة الموارد الطبيعية (Capital)", 
+                    details: `البيئة النظيفة ورأس المال الطبيعي (النيل/البحر) يدعمان قطاعات **السياحة** و **الزراعة** كمحركات للنمو المستدام.`,
+                    icon: IconMap.Economy
+                });
+            }
+
+            return { status, analysis, color };
+        };
+
+
+        // *****************************************************************
+        // 6. منطق جلب البيانات (Data Fetching Logic)
+        // *****************************************************************
+        const fetchData = async () => {
+            loading = true;
+            chatbotResponse = null; // إعادة تعيين رد الشات بوت قبل كل جلب بيانات
+            render(); 
+            const { lat, lon, treeCoverage } = governorates[selectedCity];
+            const OWM_URL = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OWM_API_KEY}&units=metric&lang=ar`;
+            const AQI_URL = `https://api.waqi.info/feed/geo:${lat};${lon}/?token=${WAQI_TOKEN}`;
+            
+            // حساب بيانات التغطية الشجرية فوراً لأنها بيانات ثابتة
+            treeCoverageData = { percentage: treeCoverage, ...getTreeStatus(treeCoverage) }; 
+
+            try {
+                // جلب بيانات الطقس وجودة الهواء 
+                const [weatherResponse, aqiResponse] = await Promise.all([ 
+                    fetch(OWM_URL).then(res => res.json()), 
+                    fetch(AQI_URL).then(res => res.json())
+                ]);
+
+                weatherData = weatherResponse.cod === 200 ? weatherResponse : null;
+                airQualityData = aqiResponse.status === 'ok' ? aqiResponse : null;
+                
+                // حساب البيانات المشتقة بعد جلب البيانات الأساسية
+                disasterWarningData = getDisasterWarning(weatherData);
+                const currentAqi = airQualityData?.data?.aqi ?? 0, currentTemp = weatherData?.main?.temp ?? 0, currentHumidity = weatherData?.main?.humidity ?? 0;
+                const riskPercentage = calculateHealthRisk(currentAqi, currentTemp, currentHumidity);
+                healthRiskData = { percentage: riskPercentage, ...getHealthRiskStatus(riskPercentage, currentAqi, currentTemp) };
+                
+                // استدعاء دالة الذكاء الاصطناعي بشكل منفصل بعد أن تصبح جميع البيانات جاهزة
+                chatbotResponse = await fetchChatbotResponse(); 
+
+            } catch (error) {
+                console.error("Failed to fetch data:", error);
+                weatherData = null; airQualityData = null; disasterWarningData = null;
+                
+                // التأكد من وجود رسالة في حالة الفشل
+                if (!chatbotResponse) {
+                    chatbotResponse = [
+                        "تعذر جلب جميع البيانات الأساسية.",
+                        "* **خطأ:** يرجى التحقق من اتصال الإنترنت أو مفاتيح API."
+                    ];
+                }
+            } finally {
+                loading = false;
+                render();
+            }
+        };
+
+        // *****************************************************************
+        // 7. منطق ومكتبة الحلول
+        // *****************************************************************
+        const getSolutions = () => {
+            const resources = governorateResources[selectedCity] || { type: 'generic', resources: [] };
+            const treeData = treeCoverageData;
+            const aqi = airQualityData?.data?.aqi ?? 0;
+
+            // --- 1. حلول المساحات الخضراء ---
+            let greenSolutions = { title: "حلول لزيادة الرقعة الخضراء", icon: IconMap.Tree, color: "text-green-400", proposals: [] };
+            if (treeData.percentage < 10) greenSolutions.proposals.push({ title: "مبادرات زراعة عاجلة", details: "تنفيذ حملات تشجير واسعة النطاق في الأحياء السكنية والمناطق الصناعية.", icon: IconMap.Alert });
+            if (resources.type.includes('urban')) greenSolutions.proposals.push({ title: "الزراعة الرأسية وأسطح المباني الخضراء", details: "استغلال الواجهات والأسطح لإنشاء حدائق رأسية، مما يساهم في خفض حرارة المباني وتنقية الهواء.", icon: IconMap.Tree });
+            if (resources.type.includes('desert')) greenSolutions.proposals.push({ title: "زراعة نباتات محلية مقاومة للجفاف", details: "التركيز على زراعة أشجار مثل النيم والأكاسيا، التي تتكيف مع الظروف الصحراوية.", icon: IconMap.Droplet });
+            else greenSolutions.proposals.push({ title: "اقتراح نباتات متوافقة مع البيئة", details: "زراعة أشجار مثمرة ومحلية مثل الجميز والتوت، والتي توفر ظلاً وغذاءً.", icon: IconMap.Tree });
+            
+            // --- 2. حلول تلوث الهواء ---
+            let pollutionSolutions = { title: "حلول لمواجهة تلوث الهواء", icon: IconMap.AirLarge, color: "text-purple-400", proposals: [] };
+            if (aqi > 100) {
+                pollutionSolutions.proposals.push({ title: "إنشاء مناطق منخفضة الانبعاثات (LEZ)", details: "منع دخول المركبات القديمة والأكثر تلويثًا لمناطق محددة، مع تشجيع استخدام السيارات الكهربائية.", icon: IconMap.Wind });
+                pollutionSolutions.proposals.push({ title: "نظام ذكي لإدارة المرور", details: "استخدام الذكاء الاصطناعي لتحليل بيانات المرور وتعديل توقيت إشارات المرور لتقليل الانبعاثات.", icon: IconMap.Satellite });
+            }
+            if (resources.type.includes('nile_delta')) pollutionSolutions.proposals.push({ title: "مكافحة حرق قش الأرز", details: "توفير معدات للمزارعين لتحويل قش الأرز إلى أعلاف وأسمدة عضوية بدلاً من حرقه.", icon: IconMap.AlertTriangle });
+            if (pollutionSolutions.proposals.length === 0) pollutionSolutions.proposals.push({ title: "الحفاظ على جودة الهواء", details: "جودة الهواء الحالية جيدة، يُنصح بالاستمرار في المراقبة وتطبيق السياسات الوقائية.", icon: IconMap.Wind });
+            
+            // --- 3. حلول الطاقة والمواصلات ---
+            let energySolutions = { title: "حلول للحفاظ على مصادر الطاقة", icon: IconMap.Sun, color: "text-amber-400", proposals: [] };
+            if (resources.resources.includes('سطوع شمسي عالٍ')) energySolutions.proposals.push({ title: "توسع في محطات الطاقة الشمسية", details: `استغلال السطوع الشمسي العالي في ${selectedCity} لإنشاء محطات طاقة شمسية كبرى.`, icon: IconMap.Sun });
+            if (resources.type.includes('coastal')) energySolutions.proposals.push({ title: "مشاريع طاقة الرياح البحرية", details: "بناء مزارع رياح على طول الساحل للاستفادة من سرعات الرياح المنتظمة.", icon: IconMap.WindHigh });
+            energySolutions.proposals.push({ title: "إضاءة الشوارع بالطاقة الشمسية", details: "استبدال أعمدة الإنارة الحالية بأخرى تعمل بالطاقة الشمسية ومصابيح LED ذكية.", icon: IconMap.Location });
+            if (resources.type.includes('coastal') || resources.type.includes('nile')) energySolutions.proposals.push({ title: "النقل النهري/البحري الكهربائي", details: "تشغيل عبّارات وقوارب كهربائية صغيرة كوسيلة نقل عامة لتقليل الضغط على الطرق.", icon: IconMap.Wind });
+            
+            // --- 4. بطاقة التحليل الاقتصادي - البيئي (NEW CARD)
+            const ecoAnalysis = getEconomicEnvironmentalAnalysis();
+            const economicEnvironmentalCard = {
+                title: "📊 التحليل الاقتصادي - البيئي",
+                details: ecoAnalysis.analysis,
+                icon: IconMap.Economy,
+                color: ecoAnalysis.color,
+                isEcoCard: true // علامة لتمييزها في دالة العرض
+            };
+
+            // --- 5. بطاقة الاقتراحات الذكية (تستخدم رد الـ API المخزن)
+            const smartSuggestionsCard = {
+                title: "🤖 اقتراحات ذكية (بالذكاء الاصطناعي)",
+                details: chatbotResponse || [LoadingSpinner("جاري تحليل البيانات وتوليد الاقتراحات...")], 
+                icon: IconMap.Satellite
+            };
+
+            return [smartSuggestionsCard, economicEnvironmentalCard, greenSolutions, pollutionSolutions, energySolutions];
+        };
+        
+        // *****************************************************************
+        // 8. منطق عرض المكونات (Rendering Logic)
+        // *****************************************************************
+
+        // *** دالة عرض بطاقة اللعبة الجديدة المدمجة ***
+        function renderGameCard() {
+            return CardTemplate(
+                "🎮 لعبة التشجير",
+                IconMap.Tree,
+                "text-lime-500",
+                `
+                    <div class="text-center">
+                        <p class="text-gray-300 text-sm">كن جزءاً من مبادرة التشجير وزرع الأشجار افتراضياً! 🌱</p>
+                        <button id="plant-btn" class="bg-lime-600 hover:bg-lime-700 text-white font-bold px-5 py-2 rounded-lg mt-4 transition duration-300 shadow-md transform hover:scale-[1.02]">
+                            🌱 ازرع شجرة الآن
+                        </button>
+                        <p id="tree-count" class="mt-4 text-3xl font-extrabold text-lime-400">${treesPlanted}</p>
+                        <p class="text-sm text-gray-400">عدد الأشجار المزروعة (افتراضياً)</p>
+                        <div id="forest" class="mt-3 flex flex-wrap gap-1 justify-center max-h-16 overflow-y-auto pt-2 border-t border-gray-700/50">
+                            ${Array(Math.min(treesPlanted, 20)).fill('🌳').join('')}
+                            ${treesPlanted > 20 ? `<span class="text-xl text-gray-500">+${treesPlanted - 20}</span>` : ''}
+                        </div>
+                    </div>
+                `,
+                // تصغير حجم البطاقة لتناسب شبكة الحلول
+                "col-span-1" 
+            );
+        }
+
+        // *** دالة عرض بطاقة البصمة الكربونية المدمجة ***
+        function renderCarbonFootprintCard() {
+            return CardTemplate(
+                "🌱 البصمة الكربونية (شخصية)",
+                IconMap.AlertTriangle,
+                "text-blue-400",
+                `
+                    <div class="space-y-4">
+                        <p class="text-gray-300 text-sm">أدخل استهلاكك الشهري لحساب بصمتك التقديرية (كجم CO₂).</p>
+                        <form id="carbon-form" class="space-y-3 text-sm">
+                            <label class="block text-right">استهلاك الكهرباء (كيلووات/شهر): 
+                                <input type="number" id="electricity" placeholder="مثال: 500" />
+                            </label>
+                            <label class="block text-right">المواصلات (كم/شهر): 
+                                <input type="number" id="transport" placeholder="مثال: 300" />
+                            </label>
+                            <label class="block text-right">بلاستيك (كجم/شهر): 
+                                <input type="number" id="plastic" placeholder="مثال: 5" />
+                            </label>
+                            <button type="submit" class="text-white rounded-lg transition duration-300 shadow-lg">
+                                احسب البصمة 🚀
+                            </button>
+                        </form>
+                        <p id="carbon-result" class="mt-4 text-center text-lg font-bold min-h-[1.5rem]">
+                            </p>
+                    </div>
+                `,
+                // تصغير حجم البطاقة لتناسب شبكة الحلول
+                "col-span-1" 
+            );
+        }
+
+
+        const renderHeader = () => `
+            <header class="bg-gray-900/90 backdrop-blur-sm sticky top-0 z-10 p-4 border-b border-gray-700 shadow-xl">
+                <div class="max-w-7xl mx-auto flex justify-between items-center flex-wrap gap-4">
+                    <h1 class="text-3xl font-extrabold text-blue-400 flex items-center gap-2">
+                        ${IconMap.Satellite} مرصد مصر 2025
+                    </h1>
+                    
+                    <div class="flex items-center gap-2 text-sm">
+                        <label for="city-select" class="text-gray-300 font-semibold">المحافظة:</label>
+                        <select id="city-select" class="bg-gray-700 text-white rounded-lg p-2 governorate-btn border border-gray-600 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition" 
+                                onchange="handleCityChange(this.value)">
+                            ${Object.keys(governorates).map(city => 
+                                `<option value="${city}" ${city === selectedCity ? 'selected' : ''}>${city}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+
+                    <nav class="flex space-x-2 space-x-reverse">
+                        <button onclick="handleViewChange('dashboard')" class="px-5 py-2 rounded-full font-bold transition duration-300 
+                                ${currentView === 'dashboard' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/50' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}">
+                            البيانات الحية (Dashboard)
+                        </button>
+                        <button onclick="handleViewChange('solutions')" class="px-5 py-2 rounded-full font-bold transition duration-300 
+                                ${currentView === 'solutions' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/50' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}">
+                            الحلول الذكية
+                        </button>
+                    </nav>
+                </div>
+            </header>
+        `;
+
+        // *** دالة الطقس المُحسَّنة ***
+        const renderWeatherCard = () => {
+            const temp = weatherData?.main?.temp ?? 'N/A';
+            const description = weatherData?.weather?.[0]?.description ?? 'غير متوفر';
+            const iconCode = weatherData?.weather?.[0]?.icon ?? '50d';
+            const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`; 
+            const sunrise = formatTime(weatherData?.sys?.sunrise);
+            const sunset = formatTime(weatherData?.sys?.sunset);
+            const windSpeed = weatherData?.wind?.speed ?? 'N/A'; // سرعة الرياح
+            const windDirection = weatherData?.wind?.deg ? `(${weatherData.wind.deg}°)` : ''; // اتجاه الرياح بالدرجات
+
+            return CardTemplate(
+                "الطقس الحالي",
+                IconMap.Thermometer,
+                colors.secondaryAccent,
+                `
+                    <div class="flex items-start justify-between gap-4 pt-3">
+                        
+                        <div class="text-center flex-grow">
+                            <img src="${iconUrl}" alt="${description}" class="w-24 h-24 mx-auto" style="filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));">
+                            <p class="text-6xl font-extrabold mt-1 text-white">${Math.round(temp)}°C</p>
+                            <p class="text-md text-gray-300 font-semibold">${description}</p>
+                        </div>
+                        
+                        <div class="text-right space-y-3 text-sm border-r-2 border-gray-700/50 pr-4 flex-shrink-0">
+                            
+                            <p class="text-gray-300 flex justify-end items-center gap-2">
+                                <span class="font-bold text-lg">${weatherData?.main?.humidity ?? 'N/A'}%</span>
+                                <span class="w-5 h-5 text-blue-400">${IconMap.Droplet}</span> الرطوبة
+                            </p>
+                            
+                            <p class="text-gray-300 flex justify-end items-center gap-2">
+                                <span class="font-bold text-lg">${windSpeed} م/ث ${windDirection}</span>
+                                <span class="w-5 h-5 text-lime-400 wind-icon">${IconMap.Wind}</span> الرياح
+                            </p>
+                            
+                            <hr class="border-gray-700/70">
+                            
+                            <p class="text-gray-300 flex justify-end items-center gap-2">
+                                <span class="font-bold">${sunrise}</span>
+                                <span class="w-5 h-5 text-amber-400">${IconMap.Sun}</span> شروق
+                            </p>
+                            
+                            <p class="text-gray-300 flex justify-end items-center gap-2">
+                                <span class="font-bold">${sunset}</span>
+                                <span class="w-5 h-5 text-amber-400">${IconMap.Sun}</span> غروب
+                            </p>
+                        </div>
+                    </div>
+                `,
+                "col-span-1 md:col-span-2 lg:col-span-2" // تم توسيع البطاقة لتتسع للبيانات الجديدة
+            );
+        };
+        // *** نهاية دالة الطقس المُحسَّنة ***
+
+        const renderAirQualityCard = () => {
+            const aqi = airQualityData?.data?.aqi ?? null;
+            const status = getAqiStatus(aqi);
+            const colorClass = getAqiColor(aqi);
+
+            return CardTemplate(
+                "جودة الهواء (AQI)",
+                IconMap.AirLarge,
+                colorClass,
+                `
+                    <div class="text-center pt-3">
+                        <p class="text-5xl font-extrabold ${colorClass} mb-4">${aqi ?? 'N/A'}</p>
+                        <p class="text-xl font-semibold mb-6">${status}</p>
+                        <div class="grid grid-cols-3 gap-2 text-right text-xs pt-3 border-t border-gray-700/50">
+                            <div><p class="text-gray-400">PM2.5:</p><p class="text-white font-bold text-sm">${airQualityData?.data?.iaqi?.pm25?.v ?? 'N/A'}</p></div>
+                            <div><p class="text-gray-400">NO2:</p><p class="text-white font-bold text-sm">${airQualityData?.data?.iaqi?.no2?.v ?? 'N/A'}</p></div>
+                            <div><p class="text-gray-400">O3:</p><p class="text-white font-bold text-sm">${airQualityData?.data?.iaqi?.o3?.v ?? 'N/A'}</p></div>
+                        </div>
+                    </div>
+                `,
+                "col-span-1 lg:col-span-1" // تم تصغير حجمها قليلاً لـ AQI
+            );
+        };
+        
+        const renderTreeCoverageCard = () => {
+            const treeData = treeCoverageData;
+            const percentage = treeData?.percentage ?? 0;
+            const status = treeData?.status ?? 'غير متوفر';
+            const recommendation = treeData?.recommendation ?? 'جاري تقييم الوضع.';
+
+            return CardTemplate(
+                "التغطية الشجرية",
+                IconMap.Tree,
+                treeData?.color ?? "text-gray-400",
+                `
+                    <div class="space-y-4 pt-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-5xl font-extrabold ${treeData?.color ?? "text-gray-400"}">${percentage}%</span>
+                            <span class="text-xl font-semibold">${status}</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-3">
+                            <div class="h-3 rounded-full ${treeData?.barColor ?? "bg-gray-500"}" style="width: ${percentage}%;"></div>
+                        </div>
+                        <p class="text-sm text-gray-400 mt-2 border-r-4 border-lime-400 pr-2">${recommendation}</p>
+                    </div>
+                `,
+                "col-span-1 lg:col-span-1" // تم تصغير حجمها قليلاً لـ Tree Coverage
+            );
+        };
+
+        const renderHealthRiskCard = () => {
+            const risk = healthRiskData;
+            const percentage = risk?.percentage ?? 0;
+            const status = risk?.status ?? 'غير متوفر';
+            const recommendation = risk?.recommendation ?? 'جاري تقييم المخاطر.';
+
+            return CardTemplate(
+                "مؤشر المخاطر الصحية",
+                IconMap.Alert,
+                risk?.color ?? "text-gray-400",
+                `
+                    <div class="space-y-4 pt-3">
+                        <div class="flex justify-between items-center pb-2">
+                            <span class="text-5xl font-extrabold ${risk?.color ?? "text-gray-400"}">${percentage}%</span>
+                            <span class="text-xl font-semibold">${status}</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-3">
+                            <div class="h-3 rounded-full ${risk?.barColor ?? "bg-gray-500"}" style="width: ${percentage}%;"></div>
+                        </div>
+                        <p class="text-sm text-gray-400 border-r-4 border-blue-400 pr-2 pt-2">${recommendation}</p>
+                        
+                        <div class="grid grid-cols-3 gap-4 text-sm pt-4 border-t border-gray-700/50">
+                            <div class="text-center"><p class="font-bold text-gray-300">التنفس:</p><p class="${risk?.healthDetails?.respiratory?.color} text-base">${risk?.healthDetails?.respiratory?.level}</p></div>
+                            <div class="text-center"><p class="font-bold text-gray-300">الحرارة:</p><p class="${risk?.healthDetails?.heatStress?.color} text-base">${risk?.healthDetails?.heatStress?.level}</p></div>
+                            <div class="text-center"><p class="font-bold text-gray-300">الحساسية:</p><p class="${risk?.healthDetails?.allergy?.color} text-base">${risk?.healthDetails?.allergy?.level}</p></div>
+                        </div>
+                    </div>
+                `,
+                "col-span-full md:col-span-2 lg:col-span-2"
+            );
+        };
+
+        const renderDisasterWarningCard = () => {
+            const warnings = disasterWarningData || [];
+            if (warnings.length === 0) {
+                return CardTemplate(
+                    "تنبيهات الكوارث",
+                    IconMap.AlertTriangle,
+                    "text-green-500",
+                    `<p class="text-lg font-bold text-center text-green-400 mt-4">✅ لا توجد تنبيهات طارئة حالياً.</p>`,
+                    "col-span-full"
+                );
+            }
+            
+            const content = warnings.map(w => `
+                <div class="flex items-start gap-4 p-3 bg-gray-700/50 rounded-lg border-r-4 border-current hover:bg-gray-700 transition duration-150" style="border-color: ${w.iconColor.replace('text-', '').replace('500', '600')}">
+                    <span class="flex-shrink-0 w-6 h-6 ${w.iconColor}">${IconMap.Alert}</span>
+                    <div>
+                        <p class="font-bold text-white text-sm">${w.type}</p>
+                        <p class="text-xs text-gray-300">${w.message}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            return CardTemplate(
+                "تنبيهات الكوارث",
+                IconMap.AlertTriangle,
+                "text-red-500",
+                `<div class="space-y-3 pt-3">${content}</div>`,
+                "col-span-full"
+            );
+        };
+        
+        const renderDashboardView = () => `
+            <main class="max-w-7xl mx-auto p-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                    ${renderDisasterWarningCard()}
+                    
+                    ${renderWeatherCard()} ${renderAirQualityCard()}
+                    ${renderTreeCoverageCard()}
+                    
+                    ${renderHealthRiskCard()} </div>
+            </main>
+        `;
+
+        const renderSolutionCard = (solution, span = "col-span-1") => {
+            let contentHtml;
+            if (solution.isEcoCard) {
+                // عرض بطاقة التحليل الاقتصادي-البيئي
+                contentHtml = solution.details.map(p => `
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 text-yellow-400 flex-shrink-0">${p.icon}</div>
+                        <div class="text-right">
+                            <p class="font-bold text-sm text-white">${p.title}</p>
+                            <p class="text-xs text-gray-400 border-r border-gray-600 pr-2">${p.details}</p>
+                        </div>
+                    </div>
+                `).join('<hr class="border-gray-700 my-4">');
+            } else if (solution.title.includes("اقتراحات ذكية")) {
+                // عرض بطاقة الذكاء الاصطناعي
+                contentHtml = loading && !chatbotResponse
+                    ? LoadingSpinner("جاري تحليل البيانات وتوليد الاقتراحات...")
+                    : solution.details.map(line => 
+                        line.startsWith('*') 
+                        ? `<p class="text-gray-200 font-semibold text-sm flex items-start gap-1"><span class="text-blue-400 text-lg ml-2">•</span>${line.substring(1).trim()}</p>`
+                        : `<p class="text-white font-normal text-base">${line}</p>`
+                    ).join('<div class="h-2"></div>');
+            } else {
+                // عرض بطاقات الحلول المنهجية (الهواء، الطاقة، الخضراء)
+                contentHtml = solution.proposals.map(p => `
+                    <div class="flex items-start gap-3">
+                        <div class="w-5 h-5 text-lime-400 flex-shrink-0">${p.icon}</div>
+                        <div class="text-right">
+                            <p class="font-bold text-sm text-white">${p.title}</p>
+                            <p class="text-xs text-gray-400">${p.details}</p>
+                        </div>
+                    </div>
+                `).join('<hr class="border-gray-700 my-4">');
+            }
+
+
+            return `
+                <div class="solution-card rounded-2xl p-6 shadow-2xl space-y-4 transition duration-300 hover:shadow-blue-500/20 ${span}">
+                    <div class="flex items-center gap-3 border-b border-gray-700/50 pb-3">
+                        <div class="w-7 h-7 ${solution.color}">${solution.icon}</div>
+                        <h3 class="text-xl font-bold text-white">${solution.title}</h3>
+                    </div>
+                    <div class="space-y-4 pr-3 border-r-2 border-blue-400/50">
+                        ${contentHtml}
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderSolutionsView = () => {
+            const solutions = getSolutions();
+            const smartCard = solutions[0];
+            const economicCard = solutions[1];
+            const otherSolutions = solutions.slice(2);
+
+            return `
+                <main class="max-w-7xl mx-auto p-6">
+                    <h2 class="text-4xl font-extrabold text-white mb-6">الحلول الاستراتيجية والأدوات التفاعلية لـ: <span class="text-blue-400">${selectedCity}</span></h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        ${renderSolutionCard(smartCard, "col-span-1")}
+                        ${renderSolutionCard(economicCard, "col-span-1")}
+                    </div>
+                    
+                    <h3 class="text-3xl font-bold text-gray-300 mb-6 border-b border-gray-700/70 pb-3">2. الحلول المنهجية الموصى بها</h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        ${otherSolutions.map(s => renderSolutionCard(s, "col-span-1")).join('')}
+                    </div>
+                    
+                    <h3 class="text-3xl font-bold text-gray-300 mb-6 border-b border-gray-700/70 pb-3">3. الأدوات التفاعلية والمشاركة المجتمعية</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        ${renderGameCard()} 
+                        ${renderCarbonFootprintCard()}
+                    </div>
+                </main>
+            `;
+        };
+        
+        const render = () => {
+            const appContainer = document.getElementById('app-container');
+            let content = renderHeader();
+            
+            if (currentView === 'dashboard') {
+                content += renderDashboardView();
+            } else {
+                content += renderSolutionsView();
+            }
+
+            appContainer.innerHTML = content;
+        };
+        
+        // *****************************************************************
+        // 9. معالجات الأحداث (Event Handlers)
+        // *****************************************************************
+        const handleCityChange = (newCity) => {
+            if (newCity !== selectedCity) {
+                selectedCity = newCity;
+                currentView = 'dashboard';
+                fetchData();
+            }
+        };
+        const handleViewChange = (view) => {
+            currentView = view;
+            render();
+        };
+
+        // *** معالج حدث النقر على زر الزراعة ***
+        document.addEventListener("click", (e) => {
+            if (e.target.id === "plant-btn") {
+                treesPlanted++;
+                
+                // تحديث عدد الأشجار والنص في البطاقة مباشرة دون إعادة تحميل كل الـ render
+                const treeCountElement = document.getElementById("tree-count");
+                const forestElement = document.getElementById("forest");
+
+                if (treeCountElement) {
+                    treeCountElement.textContent = treesPlanted;
+                }
+                
+                if (forestElement) {
+                    const tree = document.createElement("span");
+                    tree.textContent = "🌳";
+                    tree.className = "text-xl transition duration-500 transform hover:scale-125";
+                    
+                    // إضافة الشجرة في البداية لسهولة الرؤية
+                    forestElement.prepend(tree); 
+                    
+                    // إبقاء عدد محدود من الأيقونات للسرعة والأداء (20 أيقونة كافية)
+                    while (forestElement.children.length > 20) {
+                        forestElement.removeChild(forestElement.lastChild);
+                    }
+                }
+            }
+        });
+        
+        // *** معالج حدث إرسال نموذج البصمة الكربونية المدمج ***
+        document.addEventListener("submit", (e) => {
+            if (e.target.id === "carbon-form") {
+                e.preventDefault();
+                
+                // التأكد من أن جميع الحقول موجودة
+                const electricityInput = document.getElementById("electricity");
+                const transportInput = document.getElementById("transport");
+                const plasticInput = document.getElementById("plastic");
+                const resultElement = document.getElementById("carbon-result");
+
+                if (!electricityInput || !transportInput || !plasticInput || !resultElement) return;
+
+                // تحويل القيم إلى أرقام (أو صفر إذا كانت فارغة)
+                const electricity = +electricityInput.value || 0;
+                const transport = +transportInput.value || 0;
+                const plastic = +plasticInput.value || 0;
+
+                // معامل انبعاثات افتراضية (كجم CO₂ لكل وحدة)
+                // الكهرباء (0.5): متوسط انبعاثات محطة تعمل بالغاز/المازوت
+                // المواصلات (0.2): متوسط انبعاثات السيارة لكل كم
+                // البلاستيك (2): متوسط انبعاثات البلاستيك لكل كجم
+                const footprint = electricity * 0.5 + transport * 0.2 + plastic * 2;
+                
+                let resultMessage;
+                let resultColorClass;
+                
+                if (footprint > 500) {
+                    resultMessage = `بصمتك التقديرية: ${footprint.toFixed(1)} كجم CO₂/شهر 🔴 (مرتفعة جداً!)`;
+                    resultColorClass = "text-red-500";
+                } else if (footprint > 200) {
+                    resultMessage = `بصمتك التقديرية: ${footprint.toFixed(1)} كجم CO₂/شهر 🟡 (متوسطة)`;
+                    resultColorClass = "text-amber-400";
+                } else {
+                    resultMessage = `بصمتك التقديرية: ${footprint.toFixed(1)} كجم CO₂/شهر 🟢 (منخفضة)`;
+                    resultColorClass = "text-green-400";
+                }
+
+                resultElement.textContent = resultMessage;
+                resultElement.className = `mt-4 text-center text-lg font-bold ${resultColorClass}`;
+            }
+        });
+
+        
+        // *****************************************************************
+        // 10. الإطلاق الأولي (Initialisation)
+        // *****************************************************************
+        fetchData();
+    </script>
+</body>
+</html>
