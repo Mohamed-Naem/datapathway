@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مرصد الاستدامة العالمي 2025 - بيانات حية وحلول مبتكرة</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -129,6 +129,37 @@
             border: 1px solid #374151;
             transition: background-color 0.2s;
         }
+        
+
+        /* تحسينات Responsive للموبايل */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+
+            .card {
+                padding: 1rem !important;
+            }
+
+            #chat-history {
+                max-height: 200px;
+            }
+
+            .card > div:first-child > div:first-child {
+                width: 20px !important;
+                height: 20px !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+            h1, h2, h3 {
+                font-size: 1.25rem !important;
+            }
+
+            .weather-detail-box {
+                padding: 0.5rem;
+            }
+        }
     </style>
 </head>
 
@@ -143,7 +174,7 @@
         const OWM_API_KEY = 'cbb0b418fa24260a8df56c9a7cd14c4e'; // OpenWeatherMap
         const WAQI_TOKEN = 'd1adfbee8313c81608cca5a505b9ed5e38f59823';  // WAQI (aqi.info)
         // مفتاح API لخدمة الذكاء الاصطناعي للاقتراحات
-        const AI_GENERATIVE_API_KEY = 'AIzaSyAEEqwxJron2nbIyS51tDljtV7VBp9LlkI'; 
+        const AI_GENERATIVE_API_KEY = 'AIzaSyAYzuAYOF_oTb3RSxj6M1UM_H8BZK-v5dk'; 
         
         // *****************************************************************
         // 2. إدارة الحالة (State Management)
@@ -414,7 +445,7 @@
 // 5.5. دالة توليد رد الشات بوت الذكي (Chatbot Logic)
 // *****************************************************************
         const generateAiResponse = async (userPrompt, isChat = false) => {
-            const GEMINI_API_KEY = "AIzaSyAEEqwxJron2nbIyS51tDljtV7VBp9LlkI"; 
+            const GEMINI_API_KEY = "AIzaSyAYzuAYOF_oTb3RSxj6M1UM_H8BZK-v5dk"; 
             const MODEL_NAME = 'gemini-2.0-flash-exp';
             const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -691,7 +722,7 @@
                                 <p class="text-2xl font-bold text-sky-400 flex items-center justify-end gap-1">
                                     ${totalO2Produced} <span class="text-base font-normal text-gray-300">كجم</span>
                                 </p>
-                            <p class="text-xs text-gray-400 flex items-center justify-end gap-1">
+                                <p class="text-xs text-gray-400 flex items-center justify-end gap-1">
                                     <span class="w-4 h-4 text-sky-500">${IconMap.Oxygen}</span> $\text{O}_2$ منتج (سنوياً)
                                 </p>
                             </div>
@@ -784,68 +815,76 @@
         // *****************************************************************
         // دالة الطقس المحدثة (renderWeatherCard)
         // *****************************************************************
-        const renderWeatherCard = () => {
-            const temp = weatherData?.main?.temp ?? 'N/A';
-            const description = weatherData?.weather?.[0]?.description ?? 'غير متوفر';
-            const iconCode = weatherData?.weather?.[0]?.icon ?? '50d';
-            const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`; 
-            const sunrise = formatTime(weatherData?.sys?.sunrise);
-            const sunset = formatTime(weatherData?.sys?.sunset);
-            const windSpeed = weatherData?.wind?.speed ?? 'N/A';
-            const windDirection = weatherData?.wind?.deg ? `(${weatherData.wind.deg}°)` : '';
-            const humidity = weatherData?.main?.humidity ?? 'N/A';
-            const clouds = weatherData?.clouds?.all ?? 'N/A';
+const renderWeatherCard = () => {
+    const temp = weatherData?.main?.temp ?? 'N/A';
+    const description = weatherData?.weather?.[0]?.description ?? 'غير متوفر';
+    const iconCode = weatherData?.weather?.[0]?.icon ?? '50d';
+    const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`; 
+    const sunrise = formatTime(weatherData?.sys?.sunrise);
+    const sunset = formatTime(weatherData?.sys?.sunset);
+    const windSpeed = weatherData?.wind?.speed ?? 'N/A';
+    const windDirection = weatherData?.wind?.deg ? `(${weatherData.wind.deg}°)` : '';
+    const humidity = weatherData?.main?.humidity ?? 'N/A';
+    const clouds = weatherData?.clouds?.all ?? 'N/A';
 
-            return CardTemplate(
-                "الطقس الحالي",
-                IconMap.Thermometer,
-                colors.secondaryAccent,
-                `
-                    <div class="flex items-start justify-between gap-6 pt-3">
-                        
-                        <div class="text-center flex-grow flex flex-col justify-center items-center">
-                            <img src="${iconUrl}" alt="${description}" class="w-24 h-24" style="filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));">
-                            <p class="text-6xl font-extrabold mt-1 text-white">${Math.round(temp)}°C</p>
-                            <p class="text-md text-gray-300 font-semibold">${description}</p>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4 flex-shrink-0 w-full lg:w-2/3">
-                            
-                            <div class="weather-detail-box">
-                                <span class="w-5 h-5 text-blue-400 mb-1">${IconMap.Droplet}</span> 
-                                <p class="text-lg font-bold text-white">${humidity}%</p>
-                                <p class="text-xs text-gray-400">الرطوبة</p>
-                            </div>
+    return CardTemplate(
+        "الطقس الحالي",
+        IconMap.Thermometer,
+        colors.secondaryAccent,
+        `
+            <div class="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4 pt-2 md:pt-3">
 
-                            <div class="weather-detail-box">
-                                <span class="w-5 h-5 text-lime-400 wind-icon mb-1">${IconMap.Wind}</span> 
-                                <p class="text-lg font-bold text-white">${windSpeed} م/ث</p>
-                                <p class="text-xs text-gray-400">الرياح ${windDirection}</p>
-                            </div>
+                <!-- قسم درجة الحرارة والأيقونة -->
+                <div class="text-center flex flex-col justify-center items-center min-w-[140px] md:min-w-[180px]">
+                    <img src="${iconUrl}" alt="${description}" class="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24" style="filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));">
+                    <p class="text-4xl md:text-5xl lg:text-6xl font-extrabold mt-1 text-white">${Math.round(temp)}°C</p>
+                    <p class="text-sm md:text-md text-gray-300 font-semibold">${description}</p>
+                </div>
 
-                            <div class="weather-detail-box">
-                                <span class="w-5 h-5 text-gray-400 mb-1">${IconMap.Cloud}</span> 
-                                <p class="text-lg font-bold text-white">${clouds}%</p>
-                                <p class="text-xs text-gray-400">الغيوم</p>
-                            </div>
+                <!-- قسم التفاصيل -->
+                <div class="grid grid-cols-2 gap-2 md:gap-3 w-full md:flex-1">
 
-                            <div class="weather-detail-box">
-                                <span class="w-5 h-5 text-amber-400 mb-1">${IconMap.Sun}</span> 
-                                <p class="text-lg font-bold text-white">${sunrise}</p>
-                                <p class="text-xs text-gray-400">الشروق</p>
-                            </div>
-                            
-                            <div class="weather-detail-box col-span-2">
-                                <span class="w-5 h-5 text-amber-400 mb-1">${IconMap.Sun}</span> 
-                                <p class="text-lg font-bold text-white">${sunset}</p>
-                                <p class="text-xs text-gray-400">الغروب</p>
-                            </div>
-                        </div>
+                    <div class="weather-detail-box">
+                        <span class="w-4 h-4 md:w-5 md:h-5 text-blue-400 mb-1">${IconMap.Droplet}</span> 
+                        <p class="text-base md:text-lg font-bold text-white">${humidity}%</p>
+                        <p class="text-xs text-gray-400">الرطوبة</p>
                     </div>
-                `,
-                "col-span-full md:col-span-2 lg:col-span-2" 
-            );
-        };
+
+                    <div class="weather-detail-box">
+                        <span class="w-4 h-4 md:w-5 md:h-5 text-lime-400 wind-icon mb-1">${IconMap.Wind}</span> 
+                        <p class="text-base md:text-lg font-bold text-white">${windSpeed} م/ث</p>
+                        <p class="text-xs text-gray-400">الرياح ${windDirection}</p>
+                    </div>
+
+                    <div class="weather-detail-box">
+                        <span class="w-4 h-4 md:w-5 md:h-5 text-gray-400 mb-1">${IconMap.Cloud}</span> 
+                        <p class="text-base md:text-lg font-bold text-white">${clouds}%</p>
+                        <p class="text-xs text-gray-400">الغيوم</p>
+                    </div>
+
+                    <div class="weather-detail-box">
+                        <span class="w-4 h-4 md:w-5 md:h-5 text-amber-400 mb-1">${IconMap.Sun}</span> 
+                        <p class="text-base md:text-lg font-bold text-white">${sunrise}</p>
+                        <p class="text-xs text-gray-400">الشروق</p>
+                    </div>
+
+                    <div class="weather-detail-box col-span-2">
+                        <span class="w-4 h-4 md:w-5 md:h-5 text-amber-400 mb-1">${IconMap.Sun}</span> 
+                        <p class="text-base md:text-lg font-bold text-white">${sunset}</p>
+                        <p class="text-xs text-gray-400">الغروب</p>
+                    </div>
+                </div>
+            </div>
+        `,
+        "col-span-full md:col-span-2 lg:col-span-2" 
+    );
+};
+// *****************************************************************
+// نهاية دالة الطقس المحدثة 
+// *****************************************************************
+// نهاية دالة الطقس المحدثة 
+// *****************************************************************
+
         // *****************************************************************
         // نهاية دالة الطقس المحدثة 
         // *****************************************************************
@@ -860,9 +899,9 @@
                 IconMap.AirLarge,
                 colorClass,
                 `
-                    <div class="text-center pt-3">
-                        <p class="text-5xl font-extrabold ${colorClass} mb-4">${aqi ?? 'N/A'}</p>
-                        <p class="text-xl font-semibold mb-6">${status}</p>
+                    <div class="text-center pt-2 md:pt-3">
+                        <p class="text-3xl sm:text-4xl md:text-5xl font-extrabold ${colorClass} mb-3 md:mb-4">${aqi ?? 'N/A'}</p>
+                        <p class="text-base sm:text-lg md:text-xl font-semibold mb-4 md:mb-6">${status}</p>
                         <div class="grid grid-cols-3 gap-2 text-right text-xs pt-3 border-t border-gray-700/50">
                             <div><p class="text-gray-400">PM2.5:</p><p class="text-white font-bold text-sm">${airQualityData?.data?.iaqi?.pm25?.v ?? 'N/A'}</p></div>
                             <div><p class="text-gray-400">NO2:</p><p class="text-white font-bold text-sm">${airQualityData?.data?.iaqi?.no2?.v ?? 'N/A'}</p></div>
@@ -963,22 +1002,15 @@
             );
         };
         
-        // *****************************************************************
-        // تم تعديل ترتيب استدعاءات البطاقات هنا ليتناسب مع الرسم اليدوي
-        // *****************************************************************
         const renderDashboardView = () => `
-            <main class="max-w-7xl mx-auto p-6">
-                <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            <main class="max-w-7xl mx-auto p-3 sm:p-4 md:p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
+                    ${renderDisasterWarningCard()}
                     
-                    ${renderWeatherCard()} 
+                    ${renderWeatherCard()} ${renderAirQualityCard()}
                     ${renderTreeCoverageCard()}
-                    ${renderAirQualityCard()}
                     
-                    ${renderHealthRiskCard()} 
-                    
-                    ${renderDisasterWarningCard()} 
-
-                </div>
+                    ${renderHealthRiskCard()} </div>
             </main>
         `;
 
@@ -1069,7 +1101,7 @@
             const otherSolutions = solutions.slice(2);
 
             return `
-                <main class="max-w-7xl mx-auto p-6">
+                <main class="max-w-7xl mx-auto p-3 sm:p-4 md:p-6">
                     <h2 class="text-4xl font-extrabold text-white mb-6">الحلول الاستراتيجية والأدوات التفاعلية لـ: <span class="text-blue-400">${selectedCity}, ${selectedCountry}</span></h2>
                     
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
