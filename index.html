@@ -160,6 +160,136 @@
                 padding: 0.5rem;
             }
         }
+    
+
+        /* تحسينات Responsive للموبايل */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+
+            /* تصغير الـ padding والـ margin */
+            .container {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+
+            /* تعديل عرض البطاقات */
+            .card {
+                padding: 1rem !important;
+                margin-bottom: 1rem;
+            }
+
+            /* تصغير العناوين */
+            h1 {
+                font-size: 1.5rem !important;
+            }
+
+            h2 {
+                font-size: 1.25rem !important;
+            }
+
+            h3 {
+                font-size: 1.1rem !important;
+            }
+
+            /* تعديل الـ grid للعرض الكامل على الموبايل */
+            .grid {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+            }
+
+            /* تعديل أزرار المحافظات */
+            .governorate-btn {
+                font-size: 0.85rem !important;
+                padding: 0.5rem !important;
+            }
+
+            /* تعديل بطاقة الطقس */
+            .weather-detail-box {
+                padding: 0.5rem !important;
+                font-size: 0.85rem;
+            }
+
+            /* تعديل الجداول */
+            table {
+                font-size: 0.85rem;
+            }
+
+            table th, table td {
+                padding: 0.5rem !important;
+            }
+
+            /* تعديل حقول الإدخال */
+            input, button {
+                font-size: 0.9rem !important;
+                padding: 0.6rem !important;
+            }
+
+            /* تعديل الدردشة */
+            #chat-history {
+                max-height: 200px !important;
+            }
+
+            .user-message, .ai-message {
+                font-size: 0.85rem;
+                max-width: 85% !important;
+            }
+
+            /* منع أي عنصر من الخروج */
+            * {
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+
+            /* تعديل الصور */
+            img {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+
+            /* تعديل بطاقات الحلول */
+            .solution-card {
+                padding: 1rem !important;
+            }
+
+            /* إخفاء overflow */
+            .overflow-auto {
+                overflow-x: auto !important;
+            }
+        }
+
+        /* للشاشات الصغيرة جداً */
+        @media (max-width: 480px) {
+            body {
+                font-size: 13px;
+            }
+
+            h1 {
+                font-size: 1.3rem !important;
+            }
+
+            h2 {
+                font-size: 1.1rem !important;
+            }
+
+            .card {
+                padding: 0.75rem !important;
+            }
+
+            .governorate-btn {
+                font-size: 0.75rem !important;
+                padding: 0.4rem !important;
+            }
+
+            table {
+                font-size: 0.75rem;
+            }
+
+            input, button {
+                font-size: 0.85rem !important;
+            }
+        }
     </style>
 </head>
 
@@ -209,12 +339,151 @@
         // *****************************************************************
         // 3. بيانات الدول والمدن (موسعة لجميع الدول الرئيسية)
         // *****************************************************************
+                // *****************************************************************
+        // 3. بيانات الدول والمدن (موسعة - كل محافظات مصر الـ27)
+        // *****************************************************************
         const globalLocations = {
             "مصر": {
+                // === محافظات القاهرة الكبرى ===
                 "القاهرة": { lat: 30.0444, lon: 31.2357, treeCoverage: 12, type: 'urban_nile', resources: ['كثافة سكانية عالية', 'مناطق صناعية', 'خدمات حكومية'], industries: ['صناعة الغزل والنسيج', 'صناعة السيارات', 'تكرير البترول'], pollution: 'عوادم مركبات، انبعاثات صناعية، قمامة' },
+                "مدينة نصر": { lat: 30.0626, lon: 31.3351, treeCoverage: 15, type: 'urban_nile', resources: ['مناطق سكنية راقية', 'مراكز تجارية'], industries: ['خدمات', 'تجارة', 'تعليم'], pollution: 'عوادم مركبات، ازدحام' },
+                "مصر الجديدة": { lat: 30.0876, lon: 31.3265, treeCoverage: 18, type: 'urban_nile', resources: ['تراث معماري', 'مطار القاهرة'], industries: ['خدمات', 'سياحة', 'طيران'], pollution: 'ضوضاء الطائرات، عوادم' },
+                "عين شمس": { lat: 30.1302, lon: 31.3189, treeCoverage: 10, type: 'urban_nile', resources: ['جامعة عين شمس', 'مناطق تاريخية'], industries: ['تعليم', 'خدمات صحية'], pollution: 'عوادم، كثافة سكانية' },
+                
+                "الجيزة": { lat: 30.0131, lon: 31.2089, treeCoverage: 14, type: 'urban_nile', resources: ['الأهرامات', 'سياحة', 'نيل'], industries: ['سياحة', 'صناعات خفيفة', 'زراعة'], pollution: 'عوادم، تلوث نيل، غبار' },
+                "السادس من أكتوبر": { lat: 29.9547, lon: 30.9378, treeCoverage: 20, type: 'urban_desert', resources: ['مدينة صناعية', 'جامعات'], industries: ['تصنيع', 'تكنولوجيا', 'تعليم'], pollution: 'انبعاثات صناعية، حرارة' },
+                "الشيخ زايد": { lat: 30.0181, lon: 30.9699, treeCoverage: 25, type: 'urban_desert', resources: ['مدن سكنية حديثة', 'مراكز تجارية'], industries: ['عقارات', 'خدمات مالية'], pollution: 'غبار، بناء' },
+                "إمبابة": { lat: 30.0766, lon: 31.2073, treeCoverage: 8, type: 'urban_nile', resources: ['كثافة سكانية', 'أسواق'], industries: ['تجارة', 'صناعات خفيفة'], pollution: 'عوادم، نفايات' },
+                
                 "الإسكندرية": { lat: 31.2001, lon: 29.9187, treeCoverage: 18, type: 'coastal_med', resources: ['ميناء (تجارة)', 'البحر المتوسط', 'صناعة النسيج'], industries: ['البتروكيماويات', 'النسيج والملابس', 'تجارة بحرية'], pollution: 'تلوث مياه البحر، انبعاثات المصانع، ضوضاء الميناء' },
-                "أسوان": { lat: 24.0889, lon: 32.8998, treeCoverage: 4, type: 'upper_egypt_nile', resources: ['سطوع شمسي عالٍ', 'نيل', 'محاجر جرانيت'], industries: ['توليد الكهرباء (السد)', 'تعدين', 'سياحة أثرية'], pollution: 'غبار المحاجر، مخلفات البناء' },
+                "العجمي": { lat: 31.0559, lon: 29.7829, treeCoverage: 22, type: 'coastal_med', resources: ['شواطئ', 'سياحة'], industries: ['سياحة', 'صيد'], pollution: 'تلوث بحري، نفايات' },
+                "المنتزه": { lat: 31.2867, lon: 30.0137, treeCoverage: 20, type: 'coastal_med', resources: ['قصور تاريخية', 'حدائق'], industries: ['سياحة', 'خدمات'], pollution: 'ازدحام سياحي، ضوضاء' },
+                "برج العرب": { lat: 30.9179, lon: 29.5544, treeCoverage: 15, type: 'coastal_desert', resources: ['مطار', 'مدن صناعية'], industries: ['تصنيع', 'طيران', 'لوجستيات'], pollution: 'انبعاثات صناعية، ضوضاء' },
+                
+                // === محافظات الدلتا ===
+                "بنها": { lat: 30.4652, lon: 31.1814, treeCoverage: 16, type: 'urban_delta', resources: ['جامعة بنها', 'زراعة'], industries: ['تعليم', 'زراعة', 'صناعات غذائية'], pollution: 'عوادم زراعية، تلوث مياه' },
+                "شبرا الخيمة": { lat: 30.1286, lon: 31.2422, treeCoverage: 10, type: 'urban_nile', resources: ['صناعة', 'كثافة سكانية عالية'], industries: ['صناعة', 'نسيج', 'كيماويات'], pollution: 'انبعاثات صناعية شديدة، قمامة' },
+                "القناطر الخيرية": { lat: 30.1897, lon: 31.1125, treeCoverage: 25, type: 'urban_delta', resources: ['قناطر تاريخية', 'حدائق'], industries: ['سياحة', 'زراعة'], pollution: 'تلوث مياه النيل' },
+                "الخانكة": { lat: 30.2181, lon: 31.3644, treeCoverage: 18, type: 'rural_delta', resources: ['زراعة', 'بساتين'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات، تلوث مياه' },
+                
+                "دمنهور": { lat: 31.0375, lon: 30.4667, treeCoverage: 20, type: 'urban_delta', resources: ['زراعة', 'أسواق'], industries: ['زراعة', 'تجارة', 'صناعات غذائية'], pollution: 'مبيدات، عوادم' },
+                "كفر الدوار": { lat: 31.1340, lon: 30.1290, treeCoverage: 12, type: 'urban_delta', resources: ['صناعة النسيج'], industries: ['نسيج', 'غزل', 'كيماويات'], pollution: 'انبعاثات صناعية، تلوث مياه' },
+                "رشيد": { lat: 31.4019, lon: 30.4166, treeCoverage: 22, type: 'coastal_med', resources: ['تاريخ إسلامي', 'شواطئ'], industries: ['سياحة', 'صيد'], pollution: 'تلوث بحري، نفايات' },
+                "إدكو": { lat: 31.3075, lon: 30.3000, treeCoverage: 28, type: 'coastal_wetland', resources: ['بحيرة إدكو', 'صيد'], industries: ['صيد', 'زراعة'], pollution: 'تلوث البحيرة، صرف صحي' },
+                
+                "المنصورة": { lat: 31.0409, lon: 31.3785, treeCoverage: 18, type: 'urban_delta', resources: ['جامعة المنصورة', 'نيل'], industries: ['تعليم', 'خدمات صحية', 'تجارة'], pollution: 'عوادم، تلوث نيل' },
+                "طلخا": { lat: 31.0537, lon: 31.3824, treeCoverage: 15, type: 'urban_delta', resources: ['صناعة', 'زراعة'], industries: ['صناعات غذائية', 'نسيج'], pollution: 'انبعاثات صناعية' },
+                "ميت غمر": { lat: 30.7167, lon: 31.2600, treeCoverage: 20, type: 'rural_delta', resources: ['زراعة', 'تجارة'], industries: ['زراعة', 'تجارة زراعية'], pollution: 'مبيدات، عوادم' },
+                "دكرنس": { lat: 31.0303, lon: 31.5911, treeCoverage: 22, type: 'rural_delta', resources: ['زراعة', 'بساتين'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات' },
+                
+                "الزقازيق": { lat: 30.5833, lon: 31.5000, treeCoverage: 19, type: 'urban_delta', resources: ['جامعة الزقازيق', 'زراعة'], industries: ['تعليم', 'زراعة', 'تجارة'], pollution: 'عوادم، تلوث مياه' },
+                "بلبيس": { lat: 30.4184, lon: 31.5661, treeCoverage: 17, type: 'urban_delta', resources: ['موقع استراتيجي', 'زراعة'], industries: ['زراعة', 'تجارة', 'خدمات'], pollution: 'عوادم، غبار' },
+                "العاشر من رمضان": { lat: 30.2986, lon: 31.7439, treeCoverage: 22, type: 'urban_desert', resources: ['مدينة صناعية حديثة'], industries: ['تصنيع', 'تكنولوجيا', 'لوجستيات'], pollution: 'انبعاثات صناعية، حرارة' },
+                "فاقوس": { lat: 30.7294, lon: 31.7972, treeCoverage: 20, type: 'rural_delta', resources: ['زراعة', 'تجارة'], industries: ['زراعة', 'تجارة زراعية'], pollution: 'مبيدات' },
+                
+                "طنطا": { lat: 30.7865, lon: 31.0004, treeCoverage: 17, type: 'urban_delta', resources: ['مولد السيد البدوي', 'تجارة'], industries: ['نسيج', 'تجارة', 'خدمات دينية'], pollution: 'عوادم، ازدحام' },
+                "المحلة الكبرى": { lat: 30.9703, lon: 31.1669, treeCoverage: 12, type: 'urban_delta', resources: ['صناعة النسيج الكبرى'], industries: ['نسيج', 'غزل', 'صباغة'], pollution: 'انبعاثات صناعية شديدة، تلوث مياه' },
+                "كفر الزيات": { lat: 30.8244, lon: 30.8178, treeCoverage: 15, type: 'urban_delta', resources: ['صناعة كيماويات', 'زراعة'], industries: ['كيماويات', 'أسمدة', 'زراعة'], pollution: 'تلوث كيميائي شديد، انبعاثات سامة' },
+                "السنطة": { lat: 30.8869, lon: 31.0136, treeCoverage: 18, type: 'rural_delta', resources: ['زراعة', 'بساتين'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات' },
+                
+                "شبين الكوم": { lat: 30.5972, lon: 31.0117, treeCoverage: 20, type: 'urban_delta', resources: ['زراعة', 'تجارة'], industries: ['زراعة', 'تجارة', 'خدمات'], pollution: 'عوادم، مبيدات' },
+                "منوف": { lat: 30.4667, lon: 30.9667, treeCoverage: 22, type: 'rural_delta', resources: ['زراعة', 'بساتين'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات' },
+                "أشمون": { lat: 30.2989, lon: 30.9789, treeCoverage: 21, type: 'rural_delta', resources: ['زراعة كثيفة'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات، تلوث مياه' },
+                "قويسنا": { lat: 30.5614, lon: 30.5639, treeCoverage: 19, type: 'rural_delta', resources: ['زراعة', 'تجارة'], industries: ['زراعة', 'تجارة زراعية'], pollution: 'مبيدات' },
+                
+                "كفر الشيخ": { lat: 31.1107, lon: 30.9388, treeCoverage: 21, type: 'rural_delta', resources: ['زراعة أرز', 'بحيرة البرلس'], industries: ['زراعة', 'صناعات غذائية', 'صيد'], pollution: 'حرق قش الأرز، تلوث البحيرة' },
+                "دسوق": { lat: 31.1347, lon: 30.6439, treeCoverage: 20, type: 'urban_delta', resources: ['تجارة', 'زراعة'], industries: ['تجارة', 'زراعة', 'صناعات غذائية'], pollution: 'عوادم، مبيدات' },
+                "فوه": { lat: 31.2667, lon: 30.5500, treeCoverage: 24, type: 'coastal_delta', resources: ['تاريخ إسلامي', 'نيل'], industries: ['سياحة', 'صيد', 'زراعة'], pollution: 'تلوث نيل' },
+                "مطوبس": { lat: 31.3081, lon: 30.7772, treeCoverage: 22, type: 'rural_delta', resources: ['زراعة', 'بحيرات'], industries: ['زراعة', 'صيد'], pollution: 'مبيدات، تلوث مياه' },
+                
+                "دمياط": { lat: 31.4165, lon: 31.8133, treeCoverage: 23, type: 'coastal_med', resources: ['ميناء', 'صناعة الأثاث', 'شواطئ'], industries: ['صناعة الأثاث', 'صيد', 'تجارة بحرية'], pollution: 'تلوث بحري، انبعاثات صناعية' },
+                "رأس البر": { lat: 31.5078, lon: 31.8114, treeCoverage: 26, type: 'coastal_med', resources: ['سياحة شاطئية', 'مصب النيل'], industries: ['سياحة', 'صيد', 'خدمات'], pollution: 'نفايات سياحية، تلوث بحري' },
+                "فارسكور": { lat: 31.3267, lon: 31.7242, treeCoverage: 21, type: 'rural_delta', resources: ['زراعة', 'تجارة'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات' },
+                "كفر سعد": { lat: 31.3736, lon: 31.6661, treeCoverage: 20, type: 'rural_delta', resources: ['زراعة'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات' },
+                
+                // === محافظات القناة ===
+                "بورسعيد": { lat: 31.2653, lon: 32.3019, treeCoverage: 16, type: 'coastal_med', resources: ['ميناء استراتيجي', 'قناة السويس', 'منطقة حرة'], industries: ['تجارة دولية', 'خدمات بحرية', 'لوجستيات'], pollution: 'تلوث بحري، انبعاثات سفن، ضوضاء' },
+                "بورفؤاد": { lat: 31.2694, lon: 32.3144, treeCoverage: 18, type: 'coastal_med', resources: ['سياحة', 'شواطئ'], industries: ['سياحة', 'خدمات', 'صيد'], pollution: 'تلوث بحري' },
+                
+                "الإسماعيلية": { lat: 30.5833, lon: 32.2667, treeCoverage: 22, type: 'urban_canal', resources: ['قناة السويس', 'بحيرة التمساح', 'حدائق'], industries: ['خدمات بحرية', 'سياحة', 'زراعة'], pollution: 'تلوث مياه، عوادم سفن' },
+                "فايد": { lat: 30.3239, lon: 32.3006, treeCoverage: 25, type: 'urban_canal', resources: ['بحيرات', 'سياحة'], industries: ['سياحة', 'خدمات'], pollution: 'تلوث مياه البحيرات' },
+                "أبو صوير": { lat: 30.5306, lon: 32.1239, treeCoverage: 20, type: 'urban_desert', resources: ['زراعة', 'مناطق صناعية'], industries: ['زراعة', 'تصنيع'], pollution: 'انبعاثات صناعية' },
+                "القنطرة": { lat: 30.8500, lon: 32.3333, treeCoverage: 18, type: 'urban_canal', resources: ['موقع استراتيجي', 'قناة السويس'], industries: ['خدمات بحرية', 'تجارة'], pollution: 'عوادم سفن' },
+                
+                "السويس": { lat: 29.9668, lon: 32.5498, treeCoverage: 10, type: 'coastal_red_sea', resources: ['ميناء', 'قناة السويس', 'تكرير البترول'], industries: ['تكرير بترول', 'بتروكيماويات', 'تجارة بحرية'], pollution: 'انبعاثات نفطية شديدة، تلوث بحري، غبار' },
+                "عتاقة": { lat: 29.9833, lon: 32.2667, treeCoverage: 12, type: 'urban_desert', resources: ['صناعة', 'بترول'], industries: ['تكرير بترول', 'صناعة'], pollution: 'انبعاثات نفطية، حرارة' },
+                "الأربعين": { lat: 30.0000, lon: 32.5333, treeCoverage: 8, type: 'urban_desert', resources: ['صناعة'], industries: ['صناعة', 'خدمات'], pollution: 'انبعاثات صناعية' },
+                
+                // === محافظات الصعيد (شمال ووسط) ===
+                "الفيوم": { lat: 29.3084, lon: 30.8428, treeCoverage: 24, type: 'oasis_nile', resources: ['بحيرة قارون', 'زراعة', 'سياحة بيئية'], industries: ['زراعة', 'سياحة', 'صيد'], pollution: 'تلوث بحيرة قارون، مبيدات' },
+                "طامية": { lat: 29.4764, lon: 30.9467, treeCoverage: 22, type: 'rural_oasis', resources: ['زراعة'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات' },
+                "إطسا": { lat: 29.2456, lon: 30.9519, treeCoverage: 23, type: 'rural_oasis', resources: ['زراعة'], industries: ['زراعة'], pollution: 'مبيدات' },
+                "سنورس": { lat: 29.5581, lon: 30.9206, treeCoverage: 21, type: 'rural_oasis', resources: ['زراعة'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات' },
+                
+                "بني سويف": { lat: 29.0661, lon: 31.0994, treeCoverage: 18, type: 'urban_nile', resources: ['نيل', 'زراعة', 'صناعة'], industries: ['زراعة', 'صناعات غذائية', 'تعدين'], pollution: 'عوادم، تلوث نيل، مبيدات' },
+                "الواسطى": { lat: 29.3317, lon: 31.2056, treeCoverage: 20, type: 'rural_nile', resources: ['زراعة', 'نيل'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات، تلوث مياه' },
+                "ناصر": { lat: 29.0833, lon: 31.0956, treeCoverage: 19, type: 'urban_nile', resources: ['زراعة', 'تجارة'], industries: ['زراعة', 'تجارة'], pollution: 'عوادم، مبيدات' },
+                "ببا": { lat: 29.1853, lon: 31.0206, treeCoverage: 21, type: 'rural_nile', resources: ['زراعة'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات' },
+                
+                "المنيا": { lat: 28.0871, lon: 30.7618, treeCoverage: 16, type: 'urban_nile', resources: ['نيل', 'زراعة واسعة', 'آثار'], industries: ['زراعة', 'تعدين', 'سياحة أثرية'], pollution: 'مبيدات، غبار المحاجر، تلوث نيل' },
+                "ملوي": { lat: 27.7319, lon: 30.8422, treeCoverage: 18, type: 'urban_nile', resources: ['زراعة', 'تجارة'], industries: ['زراعة', 'تجارة زراعية'], pollution: 'مبيدات، عوادم' },
+                "سمالوط": { lat: 28.3114, lon: 30.7108, treeCoverage: 17, type: 'rural_nile', resources: ['زراعة'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات' },
+                "مغاغة": { lat: 28.6550, lon: 30.8403, treeCoverage: 16, type: 'rural_nile', resources: ['زراعة'], industries: ['زراعة'], pollution: 'مبيدات' },
+                
+                "أسيوط": { lat: 27.1809, lon: 31.1837, treeCoverage: 12, type: 'urban_nile', resources: ['نيل', 'جامعة أسيوط', 'زراعة'], industries: ['زراعة', 'تعليم', 'صناعات غذائية'], pollution: 'عوادم، تلوث نيل، مبيدات' },
+                "ديروط": { lat: 27.5456, lon: 30.8144, treeCoverage: 14, type: 'rural_nile', resources: ['زراعة'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات' },
+                "أبنوب": { lat: 27.2669, lon: 31.1547, treeCoverage: 13, type: 'rural_nile', resources: ['زراعة'], industries: ['زراعة'], pollution: 'مبيدات' },
+                "منفلوط": { lat: 27.3153, lon: 30.9708, treeCoverage: 14, type: 'rural_nile', resources: ['زراعة'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات' },
+                
+                "سوهاج": { lat: 26.5569, lon: 31.6948, treeCoverage: 10, type: 'urban_nile', resources: ['نيل', 'زراعة', 'آثار فرعونية'], industries: ['زراعة', 'صناعات غذائية', 'سياحة أثرية'], pollution: 'مبيدات، تلوث نيل، عوادم' },
+                "جرجا": { lat: 26.3389, lon: 31.8919, treeCoverage: 11, type: 'urban_nile', resources: ['آثار', 'زراعة'], industries: ['سياحة أثرية', 'زراعة'], pollution: 'مبيدات، عوادم' },
+                "أخميم": { lat: 26.5639, lon: 31.7486, treeCoverage: 12, type: 'rural_nile', resources: ['نسيج تقليدي', 'زراعة'], industries: ['نسيج يدوي', 'زراعة'], pollution: 'مبيدات' },
+                "البلينا": { lat: 26.3592, lon: 32.0831, treeCoverage: 10, type: 'rural_nile', resources: ['زراعة'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات' },
+                
+                "قنا": { lat: 26.1551, lon: 32.7160, treeCoverage: 9, type: 'urban_nile', resources: ['نيل', 'زراعة قصب السكر', 'سكر'], industries: ['صناعة السكر', 'زراعة', 'تعدين'], pollution: 'انبعاثات مصانع السكر، مبيدات، تلوث نيل' },
+                "نجع حمادي": { lat: 26.0481, lon: 32.2456, treeCoverage: 10, type: 'urban_nile', resources: ['صناعة الألومنيوم', 'قصب سكر'], industries: ['ألومنيوم', 'سكر', 'زراعة'], pollution: 'انبعاثات صناعية شديدة، تلوث مياه' },
+                "قوص": { lat: 25.9133, lon: 32.7603, treeCoverage: 8, type: 'rural_nile', resources: ['زراعة'], industries: ['زراعة', 'صناعات غذائية'], pollution: 'مبيدات' },
+                "دشنا": { lat: 26.1261, lon: 32.4756, treeCoverage: 9, type: 'rural_nile', resources: ['زراعة'], industries: ['زراعة'], pollution: 'مبيدات' },
+                
+                // === محافظات الصعيد (جنوب) ===
+                "الأقصر": { lat: 25.6872, lon: 32.6396, treeCoverage: 8, type: 'urban_nile', resources: ['آثار فرعونية عظيمة', 'سياحة عالمية', 'نيل'], industries: ['سياحة أثرية', 'زراعة', 'فنادق'], pollution: 'ازدحام سياحي، عوادم، حرارة شديدة' },
+                "الأقصر الجديدة": { lat: 25.6667, lon: 32.6667, treeCoverage: 10, type: 'urban_desert', resources: ['مدينة حديثة', 'خدمات'], industries: ['سياحة', 'خدمات'], pollution: 'حرارة، غبار' },
+                "إسنا": { lat: 25.2933, lon: 32.5531, treeCoverage: 7, type: 'rural_nile', resources: ['زراعة', 'آثار'], industries: ['زراعة', 'سياحة'], pollution: 'مبيدات' },
+                "أرمنت": { lat: 25.6181, lon: 32.5408, treeCoverage: 8, type: 'rural_nile', resources: ['زراعة قصب سكر'], industries: ['زراعة', 'سكر'], pollution: 'مبيدات، انبعاثات مصانع' },
+                
+                "أسوان": { lat: 24.0889, lon: 32.8998, treeCoverage: 4, type: 'upper_egypt_nile', resources: ['سطوع شمسي عالٍ', 'نيل', 'محاجر جرانيت', 'سد أسوان'], industries: ['توليد الكهرباء (السد)', 'تعدين', 'سياحة أثرية'], pollution: 'غبار المحاجر، مخلفات البناء، حرارة شديدة' },
+                "كوم أمبو": { lat: 24.4781, lon: 32.9478, treeCoverage: 5, type: 'rural_nile', resources: ['آثار', 'زراعة'], industries: ['سياحة', 'زراعة'], pollution: 'مبيدات، حرارة' },
+                "إدفو": { lat: 24.9786, lon: 32.8744, treeCoverage: 6, type: 'rural_nile', resources: ['معبد إدفو', 'زراعة'], industries: ['سياحة أثرية', 'زراعة'], pollution: 'مبيدات، حرارة' },
+                "دراو": { lat: 24.0461, lon: 32.9317, treeCoverage: 4, type: 'rural_nile', resources: ['زراعة'], industries: ['زراعة'], pollution: 'حرارة شديدة، غبار' },
+                
+                // === محافظات الحدود ===
+                "الغردقة": { lat: 27.2579, lon: 33.8116, treeCoverage: 3, type: 'coastal_red_sea', resources: ['سياحة شاطئية', 'غوص', 'شعاب مرجانية'], industries: ['سياحة', 'فنادق', 'خدمات بحرية'], pollution: 'تلوث بحري، نفايات سياحية، ضوضاء' },
+                "سفاجا": { lat: 26.7333, lon: 33.9333, treeCoverage: 2, type: 'coastal_red_sea', resources: ['ميناء', 'رمال سوداء علاجية'], industries: ['تصدير فوسفات', 'سياحة علاجية'], pollution: 'تلوث ميناء، غبار فوسفات' },
+                "القصير": { lat: 26.1061, lon: 34.2797, treeCoverage: 2, type: 'coastal_red_sea', resources: ['ميناء قديم', 'سياحة'], industries: ['صيد', 'سياحة', 'تجارة'], pollution: 'تلوث بحري' },
+                "مرسى علم": { lat: 25.0631, lon: 34.8939, treeCoverage: 1, type: 'coastal_red_sea', resources: ['سياحة غوص فاخرة', 'تعدين ذهب'], industries: ['سياحة', 'تعدين', 'صيد'], pollution: 'تلوث تعديني، نفايات سياحية' },
+                
+                "الخارجة": { lat: 25.4550, lon: 30.5428, treeCoverage: 2, type: 'desert_oasis', resources: ['واحة', 'آبار'], industries: ['زراعة', 'سياحة صحراوية'], pollution: 'غبار، حرارة' },
+                "الداخلة": { lat: 25.5000, lon: 28.9833, treeCoverage: 3, type: 'desert_oasis', resources: ['واحة تاريخية', 'آثار'], industries: ['زراعة', 'سياحة'], pollution: 'غبار، حرارة' },
+                "الفرافرة": { lat: 27.0594, lon: 27.9697, treeCoverage: 1, type: 'desert_oasis', resources: ['الصحراء البيضاء', 'سياحة'], industries: ['سياحة صحراوية'], pollution: 'غبار، حرارة شديدة' },
+                "باريس": { lat: 25.6667, lon: 30.6667, treeCoverage: 2, type: 'desert_oasis', resources: ['واحة صغيرة'], industries: ['زراعة صحراوية'], pollution: 'غبار، حرارة' },
+                
+                "مرسى مطروح": { lat: 31.3543, lon: 27.2373, treeCoverage: 1, type: 'coastal_med_desert', resources: ['شواطئ', 'سياحة'], industries: ['سياحة', 'صيد', 'خدمات'], pollution: 'نفايات سياحية، تلوث بحري' },
+                "الحمام": { lat: 30.9167, lon: 28.9500, treeCoverage: 2, type: 'coastal_med', resources: ['شواطئ', 'قرى سياحية'], industries: ['سياحة', 'خدمات'], pollution: 'نفايات سياحية' },
+                "العلمين": { lat: 30.8300, lon: 28.9517, treeCoverage: 1, type: 'coastal_desert', resources: ['تاريخ الحرب العالمية', 'سياحة'], industries: ['سياحة', 'خدمات'], pollution: 'بناء، غبار' },
+                "سيوة": { lat: 29.2028, lon: 25.5194, treeCoverage: 5, type: 'desert_oasis', resources: ['واحة ساحرة', 'عيون طبيعية', 'تمور'], industries: ['سياحة بيئية', 'زراعة تمور وزيتون'], pollution: 'غبار، ضغط سياحي' },
+                
+                "العريش": { lat: 31.1218, lon: 33.8062, treeCoverage: 1, type: 'coastal_med_desert', resources: ['ميناء', 'زراعة'], industries: ['صيد', 'زراعة', 'تجارة'], pollution: 'غبار، تلوث بحري' },
+                "رفح": { lat: 31.2917, lon: 34.2422, treeCoverage: 1, type: 'desert_coastal', resources: ['معبر حدودي', 'موقع استراتيجي'], industries: ['تجارة حدودية', 'خدمات'], pollution: 'غبار، ضغط سكاني' },
+                "الشيخ زويد": { lat: 31.1697, lon: 34.0653, treeCoverage: 1, type: 'desert', resources: ['زراعة محدودة'], industries: ['زراعة', 'خدمات'], pollution: 'غبار، حرارة' },
+                "بئر العبد": { lat: 30.9911, lon: 33.1336, treeCoverage: 1, type: 'desert', resources: ['موقع استراتيجي'], industries: ['خدمات', 'تجارة'], pollution: 'غبار، حرارة' },
+                
+                "الطور": { lat: 28.2411, lon: 33.6197, treeCoverage: 2, type: 'coastal_red_sea', resources: ['ميناء', 'تاريخ ديني'], industries: ['تجارة بحرية', 'صيد', 'سياحة دينية'], pollution: 'تلوث ميناء، غبار' },
+                "شرم الشيخ": { lat: 27.9158, lon: 34.3300, treeCoverage: 3, type: 'coastal_red_sea', resources: ['سياحة عالمية', 'غوص', 'شعاب مرجانية'], industries: ['سياحة', 'فنادق فاخرة', 'مؤتمرات دولية'], pollution: 'ضغط سياحي، تلوث بحري، نفايات' },
+                "دهب": { lat: 28.5014, lon: 34.5139, treeCoverage: 2, type: 'coastal_red_sea', resources: ['سياحة بيئية', 'غوص', 'رياضات مائية'], industries: ['سياحة', 'غوص', 'خدمات'], pollution: 'نفايات سياحية، تلوث شعاب مرجانية' },
+                "نويبع": { lat: 29.0311, lon: 34.6603, treeCoverage: 1, type: 'coastal_red_sea', resources: ['ميناء', 'سياحة بيئية'], industries: ['تجارة بحرية', 'سياحة', 'صيد'], pollution: 'تلوث ميناء، غبار' },
             },
+            
+            // باقي الدول كما هي...
             "المملكة العربية السعودية": {
                 "الرياض": { lat: 24.7136, lon: 46.6753, treeCoverage: 5, type: 'desert_urban', resources: ['نفط', 'خدمات', 'سطوع شمسي عالٍ'], industries: ['المالية', 'البناء', 'تكنولوجيا المعلومات'], pollution: 'عوادم مركبات، غبار، تكييف' },
                 "جدة": { lat: 21.4858, lon: 39.1925, treeCoverage: 15, type: 'coastal_red_sea', resources: ['ميناء', 'البحر الأحمر', 'تجارة'], industries: ['تجارة بحرية', 'بتروكيماويات', 'سياحة'], pollution: 'تلوث الميناء، انبعاثات صناعية، حرارة' },
@@ -306,8 +575,7 @@
                 "القدس": { lat: 31.7683, lon: 35.2137, treeCoverage: 18, type: 'urban_highland', resources: ['جبال', 'مواقع دينية'], industries: ['سياحة', 'خدمات', 'بناء'], pollution: 'عوادم، نفايات، ضغط مائي' },
             },
         };
-
-        // دالة جديدة محاكاة لجلب الإحداثيات والموارد بناءً على الدولة والمدينة
+      // دالة جديدة محاكاة لجلب الإحداثيات والموارد بناءً على الدولة والمدينة
         const getGeocodingAndResources = (country, city) => {
             const countryData = globalLocations[country];
             if (countryData && countryData[city]) {
